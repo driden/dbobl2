@@ -15,3 +15,41 @@ Insert into PUNTOLIMPIO (NOMBREPUNTO,LATITUD,LONGITUD,SUPERFICIE,INTENDENCIA) va
 Insert into PUNTOLIMPIO (NOMBREPUNTO,LATITUD,LONGITUD,SUPERFICIE,INTENDENCIA) values ('punto2',231121,54431,300,'Canelones');
 Insert into PUNTOLIMPIO (NOMBREPUNTO,LATITUD,LONGITUD,SUPERFICIE,INTENDENCIA) values ('punto3',32131,4533,275,'Montevideo');
 Insert into PUNTOLIMPIO (NOMBREPUNTO,LATITUD,LONGITUD,SUPERFICIE,INTENDENCIA) values ('punto4',11111,22222,280,'Rocha');
+
+Insert into Material values (1,'Cobre','Aprovechable');
+Insert into Material values (2,'Platino','Aprovechable');
+Insert into Material values (3,'Hierro','Aprovechable');
+Insert into Material values (4,'Litio','Aprovechable');
+Insert into Material values (5,'Vidrio','Aprovechable');
+Insert into Material values (6,'Acero','Aprovechable');
+Insert into Material values (7,'Uranio','Contaminante');
+Insert into Material values (8,'Plutonio','Contaminante');
+Insert into Material values (9,'Nylon','Contaminante');
+
+Insert into CompuestoPor values ('SamsungS6',1,15);
+Insert into CompuestoPor values ('SamsungS6',3,25);
+Insert into CompuestoPor values ('SamsungS6',7,55);
+
+Insert into CompuestoPor values ('Iphone 5',1,10);
+Insert into CompuestoPor values ('Iphone 5',2,15);
+Insert into CompuestoPor values ('Iphone 5',3,5);
+Insert into CompuestoPor values ('Iphone 5',6,65);
+
+Insert into CompuestoPor values ('Samsung algo',7,60);
+Insert into CompuestoPor values ('Samsung algo',1,30);
+Insert into CompuestoPor values ('Samsung algo',2,10);
+
+Insert into PROCESO VALUES (1,'desc1',3);
+Insert into PROCESO VALUES (2,'desc2',3);
+Insert into PROCESO VALUES (3,'desc3',1);
+Insert into PROCESO VALUES (4,'desc4',null);
+Insert into PROCESO VALUES (5,'desc5',6);
+Insert into PROCESO VALUES (6,'desc6',5);
+Insert into PROCESO VALUES (7,'desc7',null);
+Insert into PROCESO VALUES (8,'desc8',9);
+Insert into PROCESO VALUES (9,'desc9',10);
+Insert into PROCESO VALUES (10,'desc10',8);
+
+INSERT INTO RECICLAJE VALUES ('Iphone 5',1,1,65);
+INSERT INTO RECICLAJE VALUES ('Iphone 5',2,2,25);
+INSERT INTO RECICLAJE VALUES ('Iphone 5',7,3,40);
