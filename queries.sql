@@ -129,3 +129,64 @@ ON rec.CODIGO = proc.codigo
 WHERE rec.orden between 1 and 5
 AND rec.tiempo > 60
 AND proc.codprocparalelo is not null;
+
+
+--Obtener el nombre, superficie e intendencia de los puntos limpios donde se depositaron todos los
+--materiales. Considerar aquellos materiales que no están presentes en artículos de tipo laptop.
+SELECT pl.nombrepunto, pl.superficie, pl.Intendencia 
+FROM puntolimpio pl
+INNER JOIN deposito d
+ON pl.nombrepunto = d.nombrepunto
+INNER JOIN articulo art
+ON art.nombre = d.nombre
+INNER JOIN compuestopor cp
+ON cp.nombre = art.nombre
+INNER JOIN MATERIAL mat
+ON mat.codigo = cp.codigo
+where mat.codigo not in (
+                -- Materiales usados para laptops
+                SELECT distinct mat.codigo as materialesLaptop 
+                FROM puntolimpio pl
+                INNER JOIN deposito d
+                ON pl.nombrepunto = d.nombrepunto
+                INNER JOIN articulo art
+                ON art.nombre = d.nombre
+                INNER JOIN compuestopor cp
+                ON cp.nombre = art.nombre
+                INNER JOIN MATERIAL mat
+                ON mat.codigo = cp.codigo
+                WHERE art.tipoarticulo = 'Laptops'
+)
+GROUP BY pl.nombrepunto, pl.superficie, pl.Intendencia
+;
+
+--Obtener el nombre y la descripción de los artículos que tuvieron depósitos en junio de 2018. De estos
+--artículos, mostrar para los que tengan cobre, el código de dicho material y para los que no contengan
+--cobre mostrar el texto “No contiene cobre”.
+SELECT art.nombre, art.descripcion, 'No contiene cobre'
+FROM ARTICULO art
+INNER JOIN COMPUESTOPOR cp
+ON cp.nombre = art.nombre
+INNER JOIN MATERIAL mat
+ON mat.codigo = cp.codigo
+INNER JOIN DEPOSITO d
+ON art.nombre = d.nombre
+WHERE mat.codigo IN (
+        -- Codigos que no son Cobre
+        SELECT m1.codigo FROM MATERIAL m1
+        WHERE m1.codigo not in (
+            SELECT m.codigo FROM MATERIAL m
+            WHERE m.nombre = 'Cobre')
+)
+
+--WHERE TO_CHAR(d.FECHA,'mm') = '6' AND 
+--  TO_CHAR(FECHA,'yyyy') = '2018'
+
+GROUP BY art.nombre, art.descripcion
+;
+
+-- Codigos que no son Cobre
+SELECT mat.codigo FROM MATERIAL mat
+WHERE mat.codigo not in (
+    SELECT m.codigo FROM MATERIAL m
+    WHERE m.nombre = 'Cobre');
