@@ -31,5 +31,101 @@ AND 1 = (
         WHERE a1.tipoarticulo IN ('Television', 'Laptops')
         and d1.nombrepunto = d.nombrepunto -- IMPORTANTE: Necesito usar el mismo deposito que por el que joineo
         GROUP BY d1.nombrepunto
-        )
+        );
         
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+-- Obtener el código y descripción de aquellos procesos que son paralelos a más de un proceso. Tener en
+-- cuenta procesos paralelos que se ejecutan entre el primer y quinto lugar, y que insumen más de 60
+-- minutos.
+
+SELECT proc.codigo, proc.descripcion FROM 
+RECICLAJE rec
+INNER JOIN PROCESO proc
+ON rec.CODIGO = proc.codigo
+WHERE rec.orden between 1 and 5
+AND rec.tiempo > 60
+AND proc.codprocparalelo is not null;
