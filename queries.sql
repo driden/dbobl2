@@ -31,5 +31,30 @@ AND 1 = (
         WHERE a1.tipoarticulo IN ('Television', 'Laptops')
         and d1.nombrepunto = d.nombrepunto -- IMPORTANTE: Necesito usar el mismo deposito que por el que joineo
         GROUP BY d1.nombrepunto
-        )
-        
+        );
+
+-- Obtener el código y el nombre de los materiales que SOLO están presentes 
+-- en la composición de celulares con un porcentaje mayor a 50%.
+-- Solo material codigo 6 (Acero)
+
+SELECT m.codigo, m.nombre 
+FROM COMPUESTOPOR c
+INNER JOIN MATERIAL m
+ON c.codigo = m.codigo
+INNER JOIN ARtiCULO a
+ON a.nombre = c.nombre
+WHERE c.porcentaje > 50
+AND c.codigo NOT IN (
+    SELECT  mat.codigo
+    FROM MATERIAL mat
+    INNER JOIN COMPUESTOPOR cp
+    ON mat.codigo = cp.codigo
+    INNER JOIN articulo art
+    ON cp.nombre = art.nombre
+    WHERE art.tipoarticulo <> 'Celular')
+AND a.tipoarticulo = 'Celular';
+
+
+-- Obtener el código y descripción de aquellos procesos que son paralelos a más de un proceso. 
+-- Tener en cuenta procesos paralelos que se ejecutan entre el primer y quinto lugar, y que insumen más de 60 minutos.
+
