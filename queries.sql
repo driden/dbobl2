@@ -99,7 +99,27 @@ GROUP BY pl.nombrepunto, pl.superficie, pl.Intendencia
 --Obtener el nombre y la descripci�n de los art�culos que tuvieron dep�sitos en junio de 2018. De estos
 --art�culos, mostrar para los que tengan cobre, el c�digo de dicho material y para los que no contengan
 --cobre mostrar el texto �No contiene cobre�.
-SELECT art.nombre, art.descripcion, 'No contiene cobre'
+
+SELECT a2.nombre, (SELECT 'No contiene cobre' from Dual) as Cobre
+FROM ARTICULO a2
+WHERE a2.Nombre NOT IN (
+    SELECT art.nombre
+    FROM ARTICULO art
+    INNER JOIN COMPUESTOPOR cp
+    ON cp.nombre = art.nombre
+    INNER JOIN MATERIAL mat
+    ON mat.codigo = cp.codigo
+    INNER JOIN DEPOSITO d
+    ON art.nombre = d.nombre
+    WHERE mat.codigo = (
+            -- Codigos que de Cobre
+                SELECT m.codigo FROM MATERIAL m
+                WHERE m.nombre = 'Cobre')
+)
+UNION
+SELECT art.nombre, (
+            SELECT to_char(m.codigo) FROM MATERIAL m
+            WHERE m.nombre = 'Cobre') As Cobre
 FROM ARTICULO art
 INNER JOIN COMPUESTOPOR cp
 ON cp.nombre = art.nombre
@@ -114,15 +134,7 @@ WHERE mat.codigo IN (
             SELECT m.codigo FROM MATERIAL m
             WHERE m.nombre = 'Cobre')
 )
-
---WHERE TO_CHAR(d.FECHA,'mm') = '6' AND 
---  TO_CHAR(FECHA,'yyyy') = '2018'
-
-GROUP BY art.nombre, art.descripcion
+-- WHERE TO_CHAR(d.FECHA,'mm') = '6' AND 
+-- TO_CHAR(FECHA,'yyyy') = '2018'
 ;
 
--- Codigos que no son Cobre
-SELECT mat.codigo FROM MATERIAL mat
-WHERE mat.codigo not in (
-    SELECT m.codigo FROM MATERIAL m
-    WHERE m.nombre = 'Cobre');
