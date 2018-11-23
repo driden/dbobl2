@@ -138,3 +138,20 @@ WHERE mat.codigo IN (
 -- TO_CHAR(FECHA,'yyyy') = '2018'
 ;
 
+
+-- 7. Obtener el nombre y la descripción de los procesos de reciclaje que representaron 
+-- la mayor cantidad de tiempo en total 
+-- considerando procesos donde se haya reciclado algún artículo de tipo laptop y 
+-- que haya sido depositado entre el 10 y 20 de agosto de 2018.
+
+    
+SELECT * --NOMBRE, MAX(TIEMPO) 
+FROM RECICLAJE r
+INNER JOIN PROCESO pr
+ON r.codigo = pr.codigo
+WHERE r.tiempo IN
+                -- los tiempos maximos
+                (SELECT MAX(rPaso.Tiempo) tiempo
+                    FROM RECICLAJE rPaso
+                    GROUP BY rPaso.Nombre)
+
