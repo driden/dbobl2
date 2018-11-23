@@ -1,4 +1,4 @@
-Insert into ARTICULO (NOMBRE,DESCRIPCION,TIPOARTICULO) values ('Samsung algo','TV 43''''','Television');
+Insert into ARTICULO (NOMBRE,DESCRIPCION,TIPOARTICULO) values ('Samsung algo','TV 43','Television');
 Insert into ARTICULO (NOMBRE,DESCRIPCION,TIPOARTICULO) values ('SamsungS6','Celular Samsung','Celular');
 Insert into ARTICULO (NOMBRE,DESCRIPCION,TIPOARTICULO) values ('Iphone 5','Celular IPhone','Celular');
 Insert into ARTICULO (NOMBRE,DESCRIPCION,TIPOARTICULO) values ('Dell Inspiron','Laptop Dell','Laptops');
@@ -59,3 +59,7 @@ INSERT INTO RECICLAJE VALUES ('Iphone 5',4,4,40);
 INSERT INTO RECICLAJE VALUES ('Iphone 5',9,5,25);
 INSERT INTO RECICLAJE VALUES ('Iphone 5',5,6,40);
 INSERT INTO RECICLAJE VALUES ('Iphone 5',6,6,40);
+
+INSERT INTO RECICLAJE VALUES ('SamsungS6',6,1,40);
+INSERT INTO RECICLAJE VALUES ('SamsungS6',2,2,50);
+INSERT INTO RECICLAJE VALUES ('SamsungS6',3,2,40);
