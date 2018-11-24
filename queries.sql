@@ -154,4 +154,15 @@ WHERE r.tiempo IN
                 (SELECT MAX(rPaso.Tiempo) tiempo
                     FROM RECICLAJE rPaso
                     GROUP BY rPaso.Nombre)
+                    
+                    
+-- 8. Obtener los datos de los materiales que estén presenten en más 45 artículos en una proporción de más del 5% por artículo. 
+-- No tener en cuenta materiales que no hayan sido depositados en al menos 40% de los puntos limpios.
+ 
+--9. Obtener todos los datos de los materiales que están presentes en la mayor cantidad de artículos, 
+--    considerando solo los artículos que tuvieron la menor cantidad de depósitos entre mayo y agosto de 2018.
+
+--10. Obtener para las estaciones de invierno y primavera, la cantidad de depósitos por punto limpio, la cantidad depositada en toneladas en cada punto limpio de artículos que contengan al menos un 50% de plástico, el promedio de depósitos por hora de cada punto limpio, considerando las 24 horas del día y la cantidad de depósitos por artículo en cada punto limpio. Mostrar además qué porcentaje representa la cantidad de depósitos totales de cada punto limpio sobre el total de depósitos de cada estación. Mostrar para cada punto limpio cuál fue el material más depositado. Si hay más de un material más depositado, mostrarlos todos.
+--El esquema que se espera de esta consulta es el siguiente (respetar los nombres).
+--Estación – Punto Limpio – Cantidad Depósitos – Cantidad Toneladas – Promedio de Depósitos x Hora – Nombre Artículo – Cantidad Depósitos x Artículo – Total Depósitos x Estación – Porcentaje – Material más depositado                   
 
