@@ -1,8 +1,8 @@
--- Obtener la latitud y la longitud de los puntos limpios donde se depositaron artículos con el mayor peso, 
+-- 1) Obtener la latitud y la longitud de los puntos limpios donde se depositaron artículos con el mayor peso, 
 -- considerando los artículos de tipo celular. 
 -- Si hay más de un punto limpio que cumple las condiciones, mostrarlos a todos.
 
-SELECT d.pesokg, pl.latitud, pl.longitud
+SELECT pl.latitud, pl.longitud
 FROM (deposito d
 INNER JOIN PUNTOLIMPIO pl
 ON pl.nombrepunto = d.nombrepunto)
@@ -12,16 +12,16 @@ WHERE art.tipoarticulo = 'Celular'
 AND d.pesokg = (SELECT MAX(pesokg) FROM Deposito);
 
 
--- Obtener los puntos limpios de Montevideo y Canelones donde se depositaron artículos de tipo laptop o televisores, 
+-- 2) Obtener los puntos limpios de Montevideo y Canelones donde se depositaron artículos de tipo laptop o televisores, 
 -- pero no ambos tipos. Tener en cuenta solo los depósitos de 2 a 5 kilos.
 
-SELECT *
-FROM (deposito d
+SELECT distinct pl.nombrepunto
+FROM deposito d
 INNER JOIN puntolimpio pl
-ON d.nombrepunto = pl.nombrepunto)
+ON d.nombrepunto = pl.nombrepunto
 INNER JOIN articulo art
 ON art.nombre = d.nombre
-WHERE d.pesokg BETWEEN 2 AND 5
+WHERE  d.pesokg BETWEEN 2 AND 500
 AND pl.intendencia IN ('Montevideo', 'Canelones')
 AND 1 = (
         SELECT COUNT(a1.tipoarticulo)
@@ -32,8 +32,8 @@ AND 1 = (
         and d1.nombrepunto = d.nombrepunto -- IMPORTANTE: Necesito usar el mismo deposito que por el que joineo
         GROUP BY d1.nombrepunto
         );
-
--- Obtener el código y el nombre de los materiales que SOLO están presentes 
+        
+-- 3) Obtener el código y el nombre de los materiales que SOLO están presentes 
 -- en la composición de celulares con un porcentaje mayor a 50%.
 -- Solo material codigo 6 (Acero)
 
@@ -41,7 +41,7 @@ SELECT m.codigo, m.nombre
 FROM COMPUESTOPOR c
 INNER JOIN MATERIAL m
 ON c.codigo = m.codigo
-INNER JOIN ARtiCULO a
+INNER JOIN ARTICULO a
 ON a.nombre = c.nombre
 WHERE c.porcentaje > 50
 AND c.codigo NOT IN (
@@ -54,8 +54,8 @@ AND c.codigo NOT IN (
     WHERE art.tipoarticulo <> 'Celular')
 AND a.tipoarticulo = 'Celular';
 
--- Obtener el c�digo y descripci�n de aquellos procesos que son paralelos a m�s de un proceso. Tener en
--- cuenta procesos paralelos que se ejecutan entre el primer y quinto lugar, y que insumen m�s de 60
+-- 4) Obtener el codigo y descripcion de aquellos procesos que son paralelos a mas de un proceso. Tener en
+-- cuenta procesos paralelos que se ejecutan entre el primer y quinto lugar, y que insumen mas de 60
 -- minutos.
 
 SELECT proc.codigo, proc.descripcion FROM 
@@ -153,14 +153,65 @@ WHERE r.tiempo IN
                 -- los tiempos maximos
                 (SELECT MAX(rPaso.Tiempo) tiempo
                     FROM RECICLAJE rPaso
-                    GROUP BY rPaso.Nombre)
+                    GROUP BY rPaso.Nombre);
                     
                     
--- 8. Obtener los datos de los materiales que estén presenten en más 45 artículos en una proporción de más del 5% por artículo. 
+-- 8. Obtener los datos de los materiales que estén presenten en más de 45 artículos en una proporción de más del 5% por artículo. 
 -- No tener en cuenta materiales que no hayan sido depositados en al menos 40% de los puntos limpios.
- 
---9. Obtener todos los datos de los materiales que están presentes en la mayor cantidad de artículos, 
---    considerando solo los artículos que tuvieron la menor cantidad de depósitos entre mayo y agosto de 2018.
+
+SELECT mat2.codigo, mat2.nombre, mat2.tipomaterial
+FROM ARTICULO ar2
+INNER JOIN COMPUESTOPOR cpr2
+ON ar2.Nombre = cpr2.Nombre
+INNER JOIN DEPOSITO dep2
+ON ar2.Nombre = dep2.Nombre
+INNER JOIN PUNTOLIMPIO pl2
+ON dep2.NombrePunto = pl2.nombrepunto
+INNER JOIN MATERIAL mat2
+ON mat2.Codigo = cpr2.Codigo
+-- articulos con mas de 5% de un material
+WHERE cpr2.porcentaje > 5
+AND mat2.codigo IN (-- mas de 45 articulos
+            SELECT cpr1.CODIGO
+            FROM ARTICULO ar1
+            INNER JOIN COMPUESTOPOR cpr1
+            ON ar1.Nombre = cpr1.Nombre
+            INNER JOIN MATERIAL mat1
+            ON mat1.Codigo = cpr1.Codigo
+            GROUP BY cpr1.CODIGO
+            HAVING COUNT(1) > 1
+    )
+AND mat2.codigo NOT IN (
+  --maeriales depositados en menos del 40% de los puntos limpios
+SELECT mat.CODIGO
+FROM ARTICULO ar
+INNER JOIN COMPUESTOPOR cpr
+ON ar.Nombre = cpr.Nombre
+INNER JOIN DEPOSITO dep
+ON ar.Nombre = dep.Nombre
+INNER JOIN PUNTOLIMPIO pl
+ON dep.NombrePunto = pl.nombrepunto
+INNER JOIN MATERIAL mat
+ON mat.Codigo = cpr.Codigo
+GROUP BY mat.CODIGO
+HAVING ((COUNT(distinct dep.NombrepUnto)/(SELECT COUNT(1) FROM PUNTOLIMPIO)) * 100) < 40  
+)
+
+GROUP BY mat2.codigo, mat2.nombre, mat2.tipomaterial
+;
+-- 9. Obtener todos los datos de los materiales que están presentes en la mayor cantidad de artículos, 
+-- considerando solo los artículos que tuvieron la menor cantidad de depósitos entre mayo y agosto de 2018.
+
+--Menor cantidad depositos entre mayo y agosto 2018
+SELECT MIN(COUNT(1)) menorCantidad
+FROM ARTICULO ar1
+INNER JOIN DEPOSITO d1
+ON ar1.nombre = d1.nombre
+WHERE TO_CHAR(d1.FECHA,'mm') >= '1' 
+AND TO_CHAR(d1.FECHA,'mm') <= '12'
+AND TO_CHAR(d1.FECHA,'yyyy') = '2018'
+GROUP BY ar1.nombre
+;
 
 --10. Obtener para las estaciones de invierno y primavera, la cantidad de depósitos por punto limpio, la cantidad depositada en toneladas en cada punto limpio de artículos que contengan al menos un 50% de plástico, el promedio de depósitos por hora de cada punto limpio, considerando las 24 horas del día y la cantidad de depósitos por artículo en cada punto limpio. Mostrar además qué porcentaje representa la cantidad de depósitos totales de cada punto limpio sobre el total de depósitos de cada estación. Mostrar para cada punto limpio cuál fue el material más depositado. Si hay más de un material más depositado, mostrarlos todos.
 --El esquema que se espera de esta consulta es el siguiente (respetar los nombres).
