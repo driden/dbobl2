@@ -66,6 +66,24 @@ WHERE rec.orden between 1 and 5
 AND rec.tiempo > 60
 AND proc.codprocparalelo is not null;
 
+SELECT codigo, descripcion FROM proceso
+WHERE codigo IN (
+    SELECT distinct rec.codigo FROM RECICLAJE rec
+    -- el codigo tiene que ser un proceso que corra en paralelo
+    WHERE rec.codigo IN (
+        SELECT p1.codigo FROM PROCESO p1
+        WHERE p1.codprocparalelo is not null
+        UNION
+        SELECT p2.codprocparalelo FROM PROCESO p2
+        WHERE p2.codprocparalelo is not null
+        UNION 
+        SELECT p3.codigo FROM PROCESO p3
+        WHERE p3.codprocparalelo is not null
+        UNION
+        SELECT p4.codprocparalelo FROM PROCESO p4
+        WHERE p4.codprocparalelo is not null
+    ))
+;
 
 --Obtener el nombre, superficie e intendencia de los puntos limpios donde se depositaron todos los
 --materiales. Considerar aquellos materiales que no est�n presentes en art�culos de tipo laptop.
