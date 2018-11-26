@@ -229,8 +229,29 @@ on m3.codigo = cp3.codigo
 GROUP BY m3.codigo, m3.Nombre
 HAVING COUNT(m3.codigo) > 5 --la mayor cantidad de articulos que tuvieron la manor cantidad de depositos???
 ;
+SELECT  m3.codigo, count(m3.codigo)
+FROM ARTICULO a3
+INNER JOIN COMPUESTOPOR cp3
+ON a3.nombre = cp3.nombre
+INNER JOIN MATERIAL m3
+on m3.codigo = cp3.codigo
+GROUP BY m3.codigo
+HAVING count(m3.codigo) > (SELECT floor(count(distinct a3.nombre) / 2) mayoriaArticulos
+                            FROM ARTICULO a3
+                            INNER JOIN COMPUESTOPOR cp3
+                            ON a3.nombre = cp3.nombre
+                            INNER JOIN MATERIAL m3
+                            on m3.codigo = cp3.codigo
+
+);
 
 
+SELECT floor(count(distinct a3.nombre) / 2) mayoriaArticulos
+FROM ARTICULO a3
+INNER JOIN COMPUESTOPOR cp3
+ON a3.nombre = cp3.nombre
+INNER JOIN MATERIAL m3
+on m3.codigo = cp3.codigo;
 
 --Articulos con la menor cantidad de depositos
 SELECT d2.nombre
