@@ -220,7 +220,7 @@ GROUP BY mat2.codigo, mat2.nombre, mat2.tipomaterial
 -- 9. Obtener todos los datos de los materiales que estan presentes en la mayor cantidad de articulos, 
 -- considerando solo los articulos que tuvieron la menor cantidad de depositos entre mayo y agosto de 2018.
 
-SELECT *
+SELECT codigo, nombre, tipomaterial
 FROM MATERIAL 
 WHERE codigo in (
             SELECT  m3.codigo 
