@@ -217,64 +217,52 @@ HAVING ((COUNT(distinct dep.NombrepUnto)/(SELECT COUNT(1) FROM PUNTOLIMPIO)) * 1
 
 GROUP BY mat2.codigo, mat2.nombre, mat2.tipomaterial
 ;
--- 9. Obtener todos los datos de los materiales que están presentes en la mayor cantidad de artículos, 
--- considerando solo los artículos que tuvieron la menor cantidad de depósitos entre mayo y agosto de 2018.
+-- 9. Obtener todos los datos de los materiales que estan presentes en la mayor cantidad de articulos, 
+-- considerando solo los articulos que tuvieron la menor cantidad de depositos entre mayo y agosto de 2018.
 
-SELECT m3.codigo, m3.Nombre, COUNT(m3.codigo) numarticulos
-FROM ARTICULO a3
-INNER JOIN COMPUESTOPOR cp3
-ON a3.nombre = cp3.nombre
-INNER JOIN MATERIAL m3
-on m3.codigo = cp3.codigo
-GROUP BY m3.codigo, m3.Nombre
-HAVING COUNT(m3.codigo) > 5 --la mayor cantidad de articulos que tuvieron la manor cantidad de depositos???
-;
-SELECT  m3.codigo, count(m3.codigo)
-FROM ARTICULO a3
-INNER JOIN COMPUESTOPOR cp3
-ON a3.nombre = cp3.nombre
-INNER JOIN MATERIAL m3
-on m3.codigo = cp3.codigo
-GROUP BY m3.codigo
-HAVING count(m3.codigo) > (SELECT floor(count(distinct a3.nombre) / 2) mayoriaArticulos
-                            FROM ARTICULO a3
-                            INNER JOIN COMPUESTOPOR cp3
-                            ON a3.nombre = cp3.nombre
-                            INNER JOIN MATERIAL m3
-                            on m3.codigo = cp3.codigo
+SELECT *
+FROM MATERIAL 
+WHERE codigo in (
+            SELECT  m3.codigo 
+            FROM ARTICULO a3
+            INNER JOIN COMPUESTOPOR cp3
+            ON a3.nombre = cp3.nombre
+            INNER JOIN MATERIAL m3
+            on m3.codigo = cp3.codigo
+            GROUP BY m3.codigo
+            HAVING count(m3.codigo) > (
+                                        SELECT floor(count(distinct a3.nombre) / 2) mayoriaArticulos
+                                        FROM ARTICULO a3
+                                        INNER JOIN COMPUESTOPOR cp3
+                                        ON a3.nombre = cp3.nombre
+                                        INNER JOIN MATERIAL m3
+                                        on m3.codigo = cp3.codigo
+                                        WHERE a3.nombre IN (
+                                        --Articulos con la menor cantidad de depositos
+                                            SELECT d2.nombre
+                                            FROM ARTICULO ar2
+                                            INNER JOIN DEPOSITO d2
+                                            on ar2.nombre = d2.nombre
+                                            WHERE TO_CHAR(d2.FECHA,'mm') >= 1 
+                                            AND TO_CHAR(d2.FECHA,'mm') <= 12
+                                            AND TO_CHAR(d2.FECHA,'yyyy') = 2018
+                                            GROUP BY d2.nombre
+                                            HAVING COUNT(d2.nombre) = (
+                                                    --Menor cantidad depositos entre mayo y agosto 2018
+                                                    SELECT MIN(COUNT(1)) menorCantidad
+                                                    FROM ARTICULO ar1
+                                                    INNER JOIN DEPOSITO d1
+                                                    ON ar1.nombre = d1.nombre
+                                                    WHERE TO_CHAR(d1.FECHA,'mm') >= 1 
+                                                    AND TO_CHAR(d1.FECHA,'mm') <= 12
+                                                    AND TO_CHAR(d1.FECHA,'yyyy') = 2018
+                                                    GROUP BY ar1.nombre 
+                                            ))
+            
+                                        )
 
 );
 
-
-SELECT floor(count(distinct a3.nombre) / 2) mayoriaArticulos
-FROM ARTICULO a3
-INNER JOIN COMPUESTOPOR cp3
-ON a3.nombre = cp3.nombre
-INNER JOIN MATERIAL m3
-on m3.codigo = cp3.codigo;
-
---Articulos con la menor cantidad de depositos
-SELECT d2.nombre
-FROM ARTICULO ar2
-INNER JOIN DEPOSITO d2
-on ar2.nombre = d2.nombre
-WHERE TO_CHAR(d2.FECHA,'mm') >= 1 
-AND TO_CHAR(d2.FECHA,'mm') <= 12
-AND TO_CHAR(d2.FECHA,'yyyy') = 2018
-GROUP BY d2.nombre
-HAVING COUNT(d2.nombre) = (
-        --Menor cantidad depositos entre mayo y agosto 2018
-        SELECT MIN(COUNT(1)) menorCantidad
-        FROM ARTICULO ar1
-        INNER JOIN DEPOSITO d1
-        ON ar1.nombre = d1.nombre
-        WHERE TO_CHAR(d1.FECHA,'mm') >= 1 
-        AND TO_CHAR(d1.FECHA,'mm') <= 12
-        AND TO_CHAR(d1.FECHA,'yyyy') = 2018
-        GROUP BY ar1.nombre 
-);
-        
---FROM DEPOSITO d
 --10. Obtener para las estaciones de invierno y primavera, la cantidad de depósitos por punto limpio, la cantidad depositada en toneladas en cada punto limpio de artículos que contengan al menos un 50% de plástico, el promedio de depósitos por hora de cada punto limpio, considerando las 24 horas del día y la cantidad de depósitos por artículo en cada punto limpio. Mostrar además qué porcentaje representa la cantidad de depósitos totales de cada punto limpio sobre el total de depósitos de cada estación. Mostrar para cada punto limpio cuál fue el material más depositado. Si hay más de un material más depositado, mostrarlos todos.
 --El esquema que se espera de esta consulta es el siguiente (respetar los nombres).
 --Estación – Punto Limpio – Cantidad Depósitos – Cantidad Toneladas – Promedio de Depósitos x Hora – Nombre Artículo – Cantidad Depósitos x Artículo – Total Depósitos x Estación – Porcentaje – Material más depositado                   
