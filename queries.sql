@@ -268,6 +268,7 @@ WHERE codigo in (
 --  el promedio de depósitos por hora de cada punto limpio, considerando las 24 horas del día y la cantidad de depósitos por artículo en cada punto limpio. 
 --  Mostrar además qué porcentaje representa la cantidad de depósitos totales de cada punto limpio sobre el total de depósitos de cada estación. 
 --  Mostrar para cada punto limpio cuál fue el material más depositado. Si hay más de un material más depositado, mostrarlos todos.
+
 --El esquema que se espera de esta consulta es el siguiente (respetar los nombres).
 --Estación – Punto Limpio – Cantidad Depósitos – Cantidad Toneladas – Promedio de Depósitos x Hora – Nombre Artículo – 
 --Cantidad Depósitos x Artículo – Total Depósitos x Estación – Porcentaje – Material más depositado   
@@ -313,7 +314,13 @@ FROM
     (SELECT d4.fecha, COUNT(1)/24 AS PromediodeDepositosxHora, d4.nombre AS NOMBREARTICULO
     FROM DEPOSITO d4
     WHERE d4.nombrepunto IN (SELECT  NOMBREPUNTO FROM PUNTOLIMPIO)
-    GROUP BY d4.fecha, d4.nombre) Hora
+    GROUP BY d4.fecha, d4.nombre) Hora,
+    
+    --Mostrar además qué porcentaje representa la cantidad de depósitos totales de cada punto limpio sobre el total de depósitos de cada estación.
+    SELECT COUNT(d5.nombrepunto), d5.nombrepunto
+    FROM DEPOSITO d5
+    GROUP BY d5.nombrepunto
+    
    
 WHERE ESTACIONES.ESTACION = DEPOSITOS.ESTACION
 
