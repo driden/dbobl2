@@ -99,7 +99,7 @@ SELECT NOMBREPUNTO, SUPERFICIE, INTENDENCIA
 FROM PUNTOLIMPIO
 WHERE NOMBREPUNTO = (
 
- SELECT pl.nombrepunto
+ SELECT pl.nombrepunto--, COUNT(1)
  FROM puntolimpio pl
  INNER JOIN deposito d
  ON pl.nombrepunto = d.nombrepunto
@@ -119,8 +119,8 @@ WHERE NOMBREPUNTO = (
                  ON mat.codigo = cp.codigo
                  WHERE art.tipoarticulo = 'Laptops'
             )
-GROUP BY pl.nombrepunto, mat.codigo
-HAVING count(mat.codigo) = (SELECT COUNT(CODIGO)
+GROUP BY pl.nombrepunto
+HAVING count(distinct mat.codigo) = (SELECT COUNT(CODIGO)
                             FROM MATERIAL 
                             where codigo not in (
                              -- Materiales usados para laptops
@@ -132,28 +132,6 @@ HAVING count(mat.codigo) = (SELECT COUNT(CODIGO)
                              ON mat.codigo = cp.codigo
                              WHERE art.tipoarticulo = 'Laptops'))
                              );
-
-SELECT * --p.nombrepunto, p.superficie, p.Intendencia
-FROM PUNTOLIMPIO p
-INNER JOIN DEPOSITO d ON d.NOMBREPUNTO = p.NOMBREPUNTO
-INNER JOIN ARTICULO a1 ON a1.NOMBRE = d.NOMBRE
-INNER JOIN COMPUESTOPOR cp1 ON cp1.NOMBRE = a1.NOMBRE
-INNER JOIN MATERIAL m1 ON m1.CODIGO = cp1.CODIGO
-WHERE a1.TIPOARTICULO <> 'Laptops'
-AND COUNT (distinct M1.CODIGO) = (
-  SELECT COUNT(DISTINCT m2.CODIGO) AS cantMatNotInLaptops FROM MATERIAL m2
-  INNER JOIN COMPUESTOPOR cp2 ON m2.CODIGO = cp2.CODIGO
-  INNER JOIN ARTICULO a2 ON cp2.NOMBRE = a2.NOMBRE
-  WHERE a2.TIPOARTICULO <>  'Laptops');
-
-SELECT m1.CODIGO --p.nombrepunto, p.superficie, p.Intendencia
-FROM PUNTOLIMPIO p
-INNER JOIN DEPOSITO d ON d.NOMBREPUNTO = p.NOMBREPUNTO
-INNER JOIN ARTICULO a1 ON a1.NOMBRE = d.NOMBRE
-INNER JOIN COMPUESTOPOR cp1 ON cp1.NOMBRE = a1.NOMBRE
-INNER JOIN MATERIAL m1 ON m1.CODIGO = cp1.CODIGO
-WHERE a1.TIPOARTICULO <> 'Laptops'
-GROUP BY m1.CODIGO;
 
 --6) Obtener el nombre y la descripción de los artculos que tuvieron depósitos en junio de 2018. De estos
 --articulos, mostrar para los que tengan cobre, el código de dicho material y para los que no contengan

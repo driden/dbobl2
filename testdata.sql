@@ -38,6 +38,12 @@ Insert into CompuestoPor values ('Iphone 5',2,15);
 Insert into CompuestoPor values ('Iphone 5',3,5);
 Insert into CompuestoPor values ('Iphone 5',6,65);
 
+Insert into CompuestoPor values ('Dell Inspiron',1,10);
+Insert into CompuestoPor values ('Dell Inspiron',2,15);
+Insert into CompuestoPor values ('Dell Inspiron',3,5);
+Insert into CompuestoPor values ('Dell Inspiron',8,35);
+Insert into CompuestoPor values ('Dell Inspiron',9,30);
+
 Insert into CompuestoPor values ('Samsung algo',7,60);
 Insert into CompuestoPor values ('Samsung algo',1,25);
 Insert into CompuestoPor values ('Samsung algo',5,5);
