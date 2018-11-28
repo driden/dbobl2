@@ -1,5 +1,5 @@
--- 1) Obtener la latitud y la longitud de los puntos limpios donde se depositaron artículos con el mayor peso, 
--- considerando los artículos de tipo celular. 
+-- 1) Obtener la latitud y la longitud de los puntos limpios donde se depositaron artículos con el mayor peso,
+-- considerando los artículos de tipo celular.
 -- Si hay más de un punto limpio que cumple las condiciones, mostrarlos a todos.
 
 SELECT pl.latitud, pl.longitud
@@ -57,37 +57,40 @@ AND a.tipoarticulo = 'Celular';
 -- cuenta procesos paralelos que se ejecutan entre el primer y quinto lugar, y que insumen mas de 60
 -- minutos.
 
-SELECT p.codigo, p.descripcion FROM proceso p
-INNER JOIN RECICLAJE r ON r.CODIGO = p.CODIGO
-WHERE R.TIEMPO>60 AND R.ORDEN BETWEEN 1 AND 5 AND p.CODIGO IN(
-  SELECT p1.CODIGO AS CODIGO FROM PROCESO p1
-  INNER JOIN PROCESO p2 ON p1.codprocparalelo = p2.CODIGO
-  WHERE p2.CODPROCPARALELO <> P1.CODIGO
---   AND P2.CODIGO IN
---     (SELECT r1.codigo FROM RECICLAJE r1
---     WHERE r1.NOMBRE = r.nombre AND r1.TIEMPO >60)
-  UNION
-  SELECT p1.CODPROCPARALELO AS CODIGO FROM PROCESO p1
-  INNER JOIN PROCESO p2 ON p1.codprocparalelo = p2.CODIGO
-  WHERE p2.CODPROCPARALELO <> P1.CODIGO
---   AND P2.CODIGO IN
---     (SELECT r1.codigo FROM RECICLAJE r1
---     WHERE r1.NOMBRE = r.nombre AND r1.TIEMPO >60)
-  UNION
-  SELECT p2.CODIGO AS CODIGO FROM PROCESO p1
-  INNER JOIN PROCESO p2 ON p1.codprocparalelo = p2.CODIGO
-  WHERE p2.CODPROCPARALELO <> P1.CODIGO
---   AND P2.CODIGO IN
---     (SELECT r1.codigo FROM RECICLAJE r1
---     WHERE r1.NOMBRE = r.nombre AND r1.TIEMPO >60)
-  UNION
-  SELECT p2.CODPROCPARALELO AS CODIGO FROM PROCESO p1
-  INNER JOIN PROCESO p2 ON p1.codprocparalelo = p2.CODIGO
-  WHERE p2.CODPROCPARALELO <> P1.CODIGO
---   AND P2.CODIGO IN
---     (SELECT r1.codigo FROM RECICLAJE r1
---     WHERE r1.NOMBRE = r.nombre AND r1.TIEMPO >60)
-  );
+SELECT p.codigo, p.descripcion
+FROM proceso p
+       INNER JOIN reciclaje r ON r.codigo = p.codigo
+WHERE r.tiempo > 60
+  AND r.orden BETWEEN 1 AND 5
+  AND p.codigo IN(SELECT p1.codigo AS codigo
+                  FROM proceso p1
+                         INNER JOIN proceso p2 ON p1.codprocparalelo = p2.codigo
+                  WHERE p2.codprocparalelo <> p1.codigo
+                    AND P2.CODIGO IN
+                        (SELECT r1.codigo FROM RECICLAJE r1
+                         WHERE r1.NOMBRE = r.nombre AND r1.TIEMPO >60)
+                  UNION SELECT p1.codprocparalelo AS codigo
+                        FROM proceso p1
+                               INNER JOIN proceso p2 ON p1.codprocparalelo = p2.codigo
+                        WHERE p2.codprocparalelo <> p1.codigo
+                          AND P2.CODIGO IN
+                              (SELECT r1.codigo FROM RECICLAJE r1
+                               WHERE r1.NOMBRE = r.nombre AND r1.TIEMPO >60)
+                  UNION SELECT p2.codigo AS codigo
+                        FROM proceso p1
+                               INNER JOIN proceso p2 ON p1.codprocparalelo = p2.codigo
+                        WHERE p2.codprocparalelo <> p1.codigo
+                          AND P2.CODIGO IN
+                              (SELECT r1.codigo FROM RECICLAJE r1
+                               WHERE r1.NOMBRE = r.nombre AND r1.TIEMPO >60)
+                  UNION SELECT p2.codprocparalelo AS codigo
+                        FROM proceso p1
+                               INNER JOIN proceso p2 ON p1.codprocparalelo = p2.codigo
+                        WHERE p2.codprocparalelo <> p1.codigo
+                          AND P2.CODIGO IN
+                              (SELECT r1.codigo FROM RECICLAJE r1
+                               WHERE r1.NOMBRE = r.nombre AND r1.TIEMPO >60)
+                 );
 
 --5) Obtener el nombre, superficie e intendencia de los puntos limpios donde se depositaron todos los
 --materiales. Considerar aquellos materiales que no están presentes en artculos de tipo laptop.
@@ -140,80 +143,63 @@ INNER JOIN MATERIAL m1 ON m1.CODIGO = cp1.CODIGO
 WHERE a1.TIPOARTICULO <> 'Laptops'
 GROUP BY m1.CODIGO;
 
+--6) Obtener el nombre y la descripción de los artculos que tuvieron depósitos en junio de 2018. De estos
+--art�culos, mostrar para los que tengan cobre, el código de dicho material y para los que no contengan
+--cobre mostrar el texto No contiene cobre.
 
-
-
---6) Obtener el nombre y la descripci�n de los art�culos que tuvieron dep�sitos en junio de 2018. De estos
---art�culos, mostrar para los que tengan cobre, el c�digo de dicho material y para los que no contengan
---cobre mostrar el texto �No contiene cobre�.
-
-SELECT a2.nombre, (SELECT 'No contiene cobre' from Dual) as Cobre
-FROM ARTICULO a2
-WHERE a2.Nombre NOT IN (
-    SELECT art.nombre
-    FROM ARTICULO art
-    INNER JOIN COMPUESTOPOR cp
-    ON cp.nombre = art.nombre
-    INNER JOIN MATERIAL mat
-    ON mat.codigo = cp.codigo
-    INNER JOIN DEPOSITO d
-    ON art.nombre = d.nombre
-    WHERE mat.codigo = (
-            -- Codigos que de Cobre
-                SELECT m.codigo FROM MATERIAL m
-                WHERE m.nombre = 'Cobre')
-)
+SELECT a2.nombre, (SELECT 'No contiene cobre' FROM dual) AS cobre
+FROM articulo a2
+WHERE a2.nombre NOT IN (SELECT art.nombre
+                        FROM articulo art
+                               INNER JOIN compuestopor cp ON cp.nombre = art.nombre
+                               INNER JOIN material mat ON mat.codigo = cp.codigo
+                               INNER JOIN deposito d ON art.nombre = d.nombre
+                        WHERE mat.codigo = (
+-- Codigos que de Cobre
+                                           SELECT m.codigo FROM material m WHERE m.nombre = 'Cobre'))
 UNION
-SELECT art.nombre, (
-            SELECT to_char(m.codigo) FROM MATERIAL m
-            WHERE m.nombre = 'Cobre') As Cobre
-FROM ARTICULO art
-INNER JOIN COMPUESTOPOR cp
-ON cp.nombre = art.nombre
-INNER JOIN MATERIAL mat
-ON mat.codigo = cp.codigo
-INNER JOIN DEPOSITO d
-ON art.nombre = d.nombre
+SELECT art.nombre, (SELECT to_char(m.codigo) FROM material m WHERE m.nombre = 'Cobre') AS cobre
+FROM articulo art
+       INNER JOIN compuestopor cp ON cp.nombre = art.nombre
+       INNER JOIN material mat ON mat.codigo = cp.codigo
+       INNER JOIN deposito d ON art.nombre = d.nombre
 WHERE mat.codigo IN (
-        -- Codigos que no son Cobre
-        SELECT m1.codigo FROM MATERIAL m1
-        WHERE m1.codigo not in (
-            SELECT m.codigo FROM MATERIAL m
-            WHERE m.nombre = 'Cobre')
-)
+-- Codigos que no son Cobre
+                    SELECT m1.codigo
+                    FROM material m1
+                    WHERE m1.codigo NOT IN (SELECT m.codigo FROM material m WHERE m.nombre = 'Cobre'))
+AND TO_CHAR(d.FECHA,'mm') = 6
+AND TO_CHAR(FECHA,'yyyy') = 2018;
 
 AND TO_CHAR(d.FECHA,'mm') = 6 AND 
 TO_CHAR(FECHA,'yyyy') = 2018
 ;
 
 
--- 7. Obtener el nombre y la descripción de los procesos de reciclaje que representaron 
--- la mayor cantidad de tiempo en total 
--- considerando procesos donde se haya reciclado algún artículo de tipo laptop y 
+-- 7. Obtener el nombre y la descripción de los procesos de reciclaje que representaron
+-- la mayor cantidad de tiempo en total
+-- considerando procesos donde se haya reciclado algún artículo de tipo laptop y
 -- que haya sido depositado entre el 10 y 20 de agosto de 2018.
 
-    
+
 SELECT r.NOMBRE, pr.DESCRIPCION, r.TIEMPO 
-FROM RECICLAJE r
-INNER JOIN PROCESO pr
-ON r.codigo = pr.codigo
+FROM reciclaje r
+       INNER JOIN proceso pr ON r.codigo = pr.codigo
 INNER JOIN ARTICULO ar
 ON ar.nombre = r.nombre
 INNER JOIN DEPOSITO d
 ON d.nombre = ar.nombre
 WHERE r.tiempo IN
-                -- los tiempos maximos
-                (SELECT MAX(rPaso.Tiempo) tiempo
-                    FROM RECICLAJE rPaso
+-- los tiempos maximos
+      (SELECT MAX(rpaso.tiempo) tiempo FROM reciclaje rpaso GROUP BY rpaso.nombre);
                     GROUP BY rPaso.Nombre)
 AND TO_CHAR(d.FECHA,'mm') = 8 
 AND TO_CHAR(d.FECHA,'yyyy') = 2018
 AND (TO_CHAR(d.FECHA,'dd') >= 10 AND TO_CHAR(d.FECHA,'dd') <=20)
 AND ar.tipoarticulo = 'Laptops'
 ;
-                    
-                    
--- 8. Obtener los datos de los materiales que estén presenten en más de 45 artículos en una proporción de más del 5% por artículo. 
+
+-- 8. Obtener los datos de los materiales que estén presenten en más de 45 artículos en una proporción de más del 5% por artículo.
 -- No tener en cuenta materiales que no hayan sido depositados en al menos 40% de los puntos limpios.
 
 SELECT mat2.codigo, mat2.nombre, mat2.tipomaterial
@@ -312,121 +298,99 @@ WHERE codigo in (
 --Estación – Punto Limpio – Cantidad Depósitos – Cantidad Toneladas – Promedio de Depósitos x Hora – Nombre Artículo – 
 --Cantidad Depósitos x Artículo – Total Depósitos x Estación – Porcentaje – Material más depositado   
 
-SELECT estaciones.estacion, depositos.puntolimpio, depositos.cantdepositos,
-        cant.cantidadtoneladas,Hora.PromediodeDepositosxHora, Hora.NOMBREARTICULO,
-        Totaldepositos.CantidadDepositosxArticulo, depositoestacion.totaldepositosxestacion,depositoestacion.porcentaje,
-        masdepo.Materialmásdepositado
-FROM 
-    (SELECT 'INVIERNO' AS ESTACION FROM DUAL
-        UNION
-    SELECT 'PRIMAVERA' AS ESTACION FROM DUAL) ESTACIONES,
-    
-    (
-     SELECT d.NOMBREPUNTO AS PUNTOLIMPIO, COUNT(1) AS CANTDEPOSITOS, 'INVIERNO' ESTACION 
-     FROM DEPOSITO d
-     WHERE  ((TO_CHAR(d.FECHA,'mm') = 7 AND TO_CHAR(d.FECHA,'mm') >= 21) OR (TO_CHAR(d.FECHA,'mm') = 8)
-            OR (TO_CHAR(d.FECHA,'mm') = 9 AND TO_CHAR(d.FECHA,'mm') <= 21))
-     GROUP BY  d.NOMBREPUNTO,'INVIERNO'
-     
-     UNION 
-     
-     SELECT d2.NOMBREPUNTO AS PUNTOLIMPIO, COUNT(1) AS CANTDEPOSITOS, 'PRIMAVERA' ESTACION 
-     FROM DEPOSITO d2
-     WHERE  (TO_CHAR(d2.FECHA,'mm') = 12 AND TO_CHAR(d2.FECHA,'mm') <= 21) OR
-            ( TO_CHAR(d2.FECHA,'mm') = 9 AND TO_CHAR(d2.FECHA,'mm') >= 22 ) 
-            OR (TO_CHAR(d2.FECHA,'mm') = 10 OR TO_CHAR(d2.FECHA,'mm') = 11)
-            
-                
-     GROUP BY  d2.NOMBREPUNTO,'PRIMAVERA'
-     
-    ) DEPOSITOS,
-    
-    --la cantidad depositada en toneladas en cada punto limpio de artículos que contengan al menos un 50% de plástico
-    (SELECT SUM(d3.PESOKG)/1000 AS CANTIDADTONELADAS, d3.NOMBREPUNTO
-    FROM ARTICULO ar3
-    INNER JOIN DEPOSITO d3
-    ON ar3.nombre = d3.nombre
-    INNER JOIN COMPUESTOPOR cp3
-    ON cp3.nombre = ar3.nombre
-    INNER JOIN PUNTOLIMPIO pl3
-    ON pl3.NOMBREPUNTO = d3.NOMBREPUNTO
-    WHERE cp3.PORCENTAJE > 50
-    GROUP BY d3.NOMBREPUNTO ) CANT,
+SELECT estaciones.estacion,
+       depositos.puntolimpio,
+       depositos.cantdepositos,
+       cant.cantidadtoneladas,
+       hora.promediodedepositosxhora,
+       hora.nombrearticulo,
+       totaldepositos.cantidaddepositosxarticulo,
+       depositoestacion.totaldepositosxestacion,
+       depositoestacion.porcentaje,
+       masdepo.materialmásdepositado
+FROM (SELECT 'INVIERNO' AS estacion FROM dual
+      UNION SELECT 'PRIMAVERA' AS estacion FROM dual) estaciones,
+     (SELECT d.nombrepunto AS puntolimpio, COUNT(1) AS cantdepositos, 'INVIERNO' estacion
+      FROM deposito d
+      WHERE ((TO_CHAR(d.fecha, 'mm') = 7 AND TO_CHAR(d.fecha, 'mm') >= 21) OR (TO_CHAR(d.fecha, 'mm') = 8) OR
+             (TO_CHAR(d.fecha, 'mm') = 9 AND TO_CHAR(d.fecha, 'mm') <= 21))
+      GROUP BY d.nombrepunto, 'INVIERNO'
 
-    --promedio de depósitos por hora de cada punto limpio, considerando las 24 horas del día y la cantidad de depósitos por artículo en cada punto limpio.
-    (SELECT d4.fecha, COUNT(1)/24 AS PromediodeDepositosxHora, d4.nombre AS NOMBREARTICULO, d4.nombrepunto NOMBREPUNTO
-    FROM DEPOSITO d4
-    WHERE d4.nombrepunto IN (SELECT  NOMBREPUNTO FROM PUNTOLIMPIO)
-    GROUP BY d4.fecha, d4.nombre, d4.nombrepunto) HORA,
-    
-    (SELECT COUNT(1) as CantidadDepositosxArticulo, d6.Nombre nombre
-    FROM DEPOSITO d6
-    GROUP BY d6.NOMBRE) TOTALDEPOSITOS,
-    
-    --Mostrar además qué porcentaje representa la cantidad de depósitos totales de cada punto limpio sobre el total de depósitos de cada estación.
-(
-     SELECT COUNT(1) AS TotalDepositosxEstacion, 'INVIERNO' ESTACION, (100*COUNT(1)/(SELECT COUNT(1) FROM DEPOSITO)) Porcentaje
-     FROM DEPOSITO d
-     INNER JOIN ARTICULO ar
-     ON d.NOMBRE = ar.NOMBRE
-     WHERE  ((TO_CHAR(d.FECHA,'mm') = 7 AND TO_CHAR(d.FECHA,'mm') >= 21) OR (TO_CHAR(d.FECHA,'mm') = 8)
-            OR (TO_CHAR(d.FECHA,'mm') = 9 AND TO_CHAR(d.FECHA,'mm') <= 21))
-     GROUP BY 'INVIERNO'
-     
-     UNION 
-     
-     SELECT COUNT(1) AS TotalDepositosxEstacion, 'PRIMAVERA' ESTACION, 100*COUNT(1)/(SELECT COUNT(1) FROM DEPOSITO) Porcentaje
-     FROM DEPOSITO d2
-     INNER JOIN ARTICULO ar2
-     ON d2.NOMBRE = ar2.NOMBRE
-     WHERE  (TO_CHAR(d2.FECHA,'mm') = 12 AND TO_CHAR(d2.FECHA,'mm') <= 21) OR
-            ( TO_CHAR(d2.FECHA,'mm') = 9 AND TO_CHAR(d2.FECHA,'mm') >= 22 ) 
-            OR (TO_CHAR(d2.FECHA,'mm') = 10 OR TO_CHAR(d2.FECHA,'mm') = 11)
-            
-                
-     GROUP BY 'PRIMAVERA'
-     ) DEPOSITOESTACION,
-     
-    (SELECT t2.nombrepunto, t2.nombre AS Materialmásdepositado FROM 
-        (SELECT nombrepunto, MAX(cant) maxcant from (
-            SELECT d7.nombrepunto, m7.nombre, COUNT(m7.nombre) cant
-            FROM MATERIAL m7
-            INNER JOIN COMPUESTOPOR cp7
-            ON m7.codigo = cp7.codigo
-            INNER JOIN ARTICULO ar7
-            ON ar7.nombre = cp7.nombre
-            INNER JOIN DEPOSITO d7
-            ON d7.NOMBRE = ar7.NOMBRE
-            INNER JOIN PUNTOLIMPIO pl7
-            ON pl7.nombrepunto = d7.nombrepunto
-            GROUP BY d7.nombrepunto, m7.nombre
-        )
-        group by nombrepunto
-        )t1 
-        INNER JOIN
-        (
-            SELECT d7.nombrepunto, m7.nombre, COUNT(m7.nombre) cant
-            FROM MATERIAL m7
-            INNER JOIN COMPUESTOPOR cp7
-            ON m7.codigo = cp7.codigo
-            INNER JOIN ARTICULO ar7
-            ON ar7.nombre = cp7.nombre
-            INNER JOIN DEPOSITO d7
-            ON d7.NOMBRE = ar7.NOMBRE
-            INNER JOIN PUNTOLIMPIO pl7
-            ON pl7.nombrepunto = d7.nombrepunto
-            GROUP BY d7.nombrepunto, m7.nombre
-        )t2
-        
-        on t1.nombrepunto = t2.nombrepunto
-        AND t1.maxcant = t2.cant) MASDEPO
-   
-WHERE ESTACIONES.ESTACION = DEPOSITOS.ESTACION
-AND TOTALDEPOSITOS.nombre = Hora.NombreArticulo
-AND cant.nombrepunto = DEPOSITOS.puntolimpio
-AND CANT.NOMBREPUNTO = HORA.NOMBREPUNTO
-AND TOTALDEPOSITOS.NOMBRE = HORA.NOMBREARTICULO
-AND depositoestacion.estacion = ESTACIONES.ESTACION
-AND masdepo.nombrepunto = HORA.NOMBREPUNTO
-;
+      UNION
+
+      SELECT d2.nombrepunto AS puntolimpio, COUNT(1) AS cantdepositos, 'PRIMAVERA' estacion
+      FROM deposito d2
+      WHERE (TO_CHAR(d2.fecha, 'mm') = 12 AND TO_CHAR(d2.fecha, 'mm') <= 21)
+         OR (TO_CHAR(d2.fecha, 'mm') = 9 AND TO_CHAR(d2.fecha, 'mm') >= 22)
+         OR (TO_CHAR(d2.fecha, 'mm') = 10 OR TO_CHAR(d2.fecha, 'mm') = 11)
+
+
+      GROUP BY d2.nombrepunto, 'PRIMAVERA') depositos,
+--la cantidad depositada en toneladas en cada punto limpio de artículos que contengan al menos un 50% de plástico
+     (SELECT SUM(d3.pesokg) / 1000 AS cantidadtoneladas, d3.nombrepunto
+      FROM articulo ar3
+             INNER JOIN deposito d3 ON ar3.nombre = d3.nombre
+             INNER JOIN compuestopor cp3 ON cp3.nombre = ar3.nombre
+             INNER JOIN puntolimpio pl3 ON pl3.nombrepunto = d3.nombrepunto
+      WHERE cp3.porcentaje > 50
+      GROUP BY d3.nombrepunto) cant,
+--promedio de depósitos por hora de cada punto limpio, considerando las 24 horas del día y la cantidad de depósitos por artículo en cada punto limpio.
+     (SELECT d4.fecha,
+             COUNT(1) / 24 AS promediodedepositosxhora,
+             d4.nombre     AS nombrearticulo,
+             d4.nombrepunto   nombrepunto
+      FROM deposito d4
+      WHERE d4.nombrepunto IN (SELECT nombrepunto FROM puntolimpio)
+      GROUP BY d4.fecha, d4.nombre, d4.nombrepunto) hora,
+     (SELECT COUNT(1) AS cantidaddepositosxarticulo, d6.nombre nombre
+      FROM deposito d6
+      GROUP BY d6.nombre) totaldepositos,
+--Mostrar además qué porcentaje representa la cantidad de depósitos totales de cada punto limpio sobre el total de depósitos de cada estación.
+     (SELECT COUNT(1) AS                                        totaldepositosxestacion,
+             'INVIERNO'                                         estacion,
+             (100 * COUNT(1) / (SELECT COUNT(1) FROM deposito)) porcentaje
+      FROM deposito d
+             INNER JOIN articulo ar ON d.nombre = ar.nombre
+      WHERE ((TO_CHAR(d.fecha, 'mm') = 7 AND TO_CHAR(d.fecha, 'mm') >= 21) OR (TO_CHAR(d.fecha, 'mm') = 8) OR
+             (TO_CHAR(d.fecha, 'mm') = 9 AND TO_CHAR(d.fecha, 'mm') <= 21))
+      GROUP BY 'INVIERNO'
+
+      UNION
+
+      SELECT COUNT(1) AS                                      totaldepositosxestacion,
+             'PRIMAVERA'                                      estacion,
+             100 * COUNT(1) / (SELECT COUNT(1) FROM deposito) porcentaje
+      FROM deposito d2
+             INNER JOIN articulo ar2 ON d2.nombre = ar2.nombre
+      WHERE (TO_CHAR(d2.fecha, 'mm') = 12 AND TO_CHAR(d2.fecha, 'mm') <= 21)
+         OR (TO_CHAR(d2.fecha, 'mm') = 9 AND TO_CHAR(d2.fecha, 'mm') >= 22)
+         OR (TO_CHAR(d2.fecha, 'mm') = 10 OR TO_CHAR(d2.fecha, 'mm') = 11)
+
+
+      GROUP BY 'PRIMAVERA') depositoestacion,
+     (SELECT t2.nombrepunto, t2.nombre AS materialmásdepositado
+      FROM (SELECT nombrepunto, MAX(cant) maxcant
+            FROM (SELECT d7.nombrepunto, m7.nombre, COUNT(m7.nombre) cant
+                  FROM material m7
+                         INNER JOIN compuestopor cp7 ON m7.codigo = cp7.codigo
+                         INNER JOIN articulo ar7 ON ar7.nombre = cp7.nombre
+                         INNER JOIN deposito d7 ON d7.nombre = ar7.nombre
+                         INNER JOIN puntolimpio pl7 ON pl7.nombrepunto = d7.nombrepunto
+                  GROUP BY d7.nombrepunto, m7.nombre)
+            GROUP BY nombrepunto)t1
+             INNER JOIN (SELECT d7.nombrepunto, m7.nombre, COUNT(m7.nombre) cant
+                         FROM material m7
+                                INNER JOIN compuestopor cp7 ON m7.codigo = cp7.codigo
+                                INNER JOIN articulo ar7 ON ar7.nombre = cp7.nombre
+                                INNER JOIN deposito d7 ON d7.nombre = ar7.nombre
+                                INNER JOIN puntolimpio pl7 ON pl7.nombrepunto = d7.nombrepunto
+                         GROUP BY d7.nombrepunto, m7.nombre)t2
+               ON t1.nombrepunto = t2.nombrepunto AND t1.maxcant = t2.cant) masdepo
+WHERE estaciones.estacion = depositos.estacion
+  AND totaldepositos.nombre = hora.nombrearticulo
+  AND cant.nombrepunto = depositos.puntolimpio
+  AND cant.nombrepunto = hora.nombrepunto
+  AND totaldepositos.nombre = hora.nombrearticulo
+  AND depositoestacion.estacion = estaciones.estacion
+  AND masdepo.nombrepunto = hora.nombrepunto;
 
