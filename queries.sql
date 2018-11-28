@@ -35,7 +35,6 @@ AND 1 = (
         
 -- 3) Obtener el código y el nombre de los materiales que SOLO están presentes 
 -- en la composición de celulares con un porcentaje mayor a 50%.
--- Solo material codigo 6 (Acero)
 
 SELECT m.codigo, m.nombre 
 FROM COMPUESTOPOR c
@@ -58,34 +57,35 @@ AND a.tipoarticulo = 'Celular';
 -- cuenta procesos paralelos que se ejecutan entre el primer y quinto lugar, y que insumen mas de 60
 -- minutos.
 
-SELECT proc.codigo, proc.descripcion FROM 
-RECICLAJE rec
-INNER JOIN PROCESO proc
-ON rec.CODIGO = proc.codigo
-WHERE rec.orden between 1 and 5
-AND rec.tiempo > 60
-AND proc.codprocparalelo is not null;
+SELECT p.codigo, p.descripcion FROM proceso p
+INNER JOIN RECICLAJE r ON r.CODIGO = p.CODIGO
+WHERE R.TIEMPO>60 AND R.ORDEN BETWEEN 1 AND 5 AND p.CODIGO IN(
+  SELECT p1.CODIGO AS CODIGO FROM PROCESO p1
+  INNER JOIN PROCESO p2 ON p1.codprocparalelo = p2.CODIGO
+  WHERE p2.CODPROCPARALELO <> P1.CODIGO AND P2.CODIGO IN
+    (SELECT r1.codigo FROM RECICLAJE r1
+    WHERE r1.NOMBRE = r.nombre AND r1.TIEMPO >60)
+  UNION
+  SELECT p1.CODPROCPARALELO AS CODIGO FROM PROCESO p1
+  INNER JOIN PROCESO p2 ON p1.codprocparalelo = p2.CODIGO
+  WHERE p2.CODPROCPARALELO <> P1.CODIGO AND P2.CODIGO IN
+    (SELECT r1.codigo FROM RECICLAJE r1
+    WHERE r1.NOMBRE = r.nombre AND r1.TIEMPO >60)
+  UNION
+  SELECT p2.CODIGO AS CODIGO FROM PROCESO p1
+  INNER JOIN PROCESO p2 ON p1.codprocparalelo = p2.CODIGO
+  WHERE p2.CODPROCPARALELO <> P1.CODIGO AND P2.CODIGO IN
+    (SELECT r1.codigo FROM RECICLAJE r1
+    WHERE r1.NOMBRE = r.nombre AND r1.TIEMPO >60)
+  UNION
+  SELECT p2.CODPROCPARALELO AS CODIGO FROM PROCESO p1
+  INNER JOIN PROCESO p2 ON p1.codprocparalelo = p2.CODIGO
+  WHERE p2.CODPROCPARALELO <> P1.CODIGO AND P2.CODIGO IN
+    (SELECT r1.codigo FROM RECICLAJE r1
+    WHERE r1.NOMBRE = r.nombre AND r1.TIEMPO >60)
+  );
 
-SELECT codigo, descripcion FROM proceso
-WHERE codigo IN (
-    SELECT distinct rec.codigo FROM RECICLAJE rec
-    -- el codigo tiene que ser un proceso que corra en paralelo
-    WHERE rec.codigo IN (
-        SELECT p1.codigo FROM PROCESO p1
-        WHERE p1.codprocparalelo is not null
-        UNION
-        SELECT p2.codprocparalelo FROM PROCESO p2
-        WHERE p2.codprocparalelo is not null
-        UNION 
-        SELECT p3.codigo FROM PROCESO p3
-        WHERE p3.codprocparalelo is not null
-        UNION
-        SELECT p4.codprocparalelo FROM PROCESO p4
-        WHERE p4.codprocparalelo is not null
-    ))
-;
-
---Obtener el nombre, superficie e intendencia de los puntos limpios donde se depositaron todos los
+--5) Obtener el nombre, superficie e intendencia de los puntos limpios donde se depositaron todos los
 --materiales. Considerar aquellos materiales que no est�n presentes en art�culos de tipo laptop.
 SELECT pl.nombrepunto, pl.superficie, pl.Intendencia 
 FROM puntolimpio pl
@@ -114,7 +114,7 @@ where mat.codigo not in (
 GROUP BY pl.nombrepunto, pl.superficie, pl.Intendencia
 ;
 
---Obtener el nombre y la descripci�n de los art�culos que tuvieron dep�sitos en junio de 2018. De estos
+--6) Obtener el nombre y la descripci�n de los art�culos que tuvieron dep�sitos en junio de 2018. De estos
 --art�culos, mostrar para los que tengan cobre, el c�digo de dicho material y para los que no contengan
 --cobre mostrar el texto �No contiene cobre�.
 
