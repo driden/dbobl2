@@ -22,7 +22,9 @@ Insert into DEPOSITO (NOMBREPUNTO,NOMBRE,FECHA,HORA,PESOKG) values ('punto3','Ip
 Insert into DEPOSITO (NOMBREPUNTO,NOMBRE,FECHA,HORA,PESOKG) values ('punto2','Iphone 5',to_date('20/11/2018','DD/MM/YYYY'),2300,1);
 Insert into DEPOSITO (NOMBREPUNTO,NOMBRE,FECHA,HORA,PESOKG) values ('punto3','Dell Inspiron',to_date('04/06/2018','DD/MM/YYYY'),1400,2.5);
 Insert into DEPOSITO (NOMBREPUNTO,NOMBRE,FECHA,HORA,PESOKG) values ('punto3','SamsungS6',to_date('04/07/2018','DD/MM/YYYY'),1000,3.5);
+Insert into DEPOSITO (NOMBREPUNTO,NOMBRE,FECHA,HORA,PESOKG) values ('punto3','SamsungS6',to_date('23/06/2018','DD/MM/YYYY'),1000,4.5);
 Insert into DEPOSITO (NOMBREPUNTO,NOMBRE,FECHA,HORA,PESOKG) values ('punto3','Samsung algo',to_date('22/02/2018','DD/MM/YYYY'),2300,4);
+Insert into DEPOSITO (NOMBREPUNTO,NOMBRE,FECHA,HORA,PESOKG) values ('punto2','Dell Inspiron',to_date('14/08/2018','DD/MM/YYYY'),1440,1.5);
 
 Insert into Material values (1,'Cobre','Aprovechable');
 Insert into Material values (2,'Platino','Aprovechable');

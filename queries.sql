@@ -181,8 +181,9 @@ WHERE mat.codigo IN (
             SELECT m.codigo FROM MATERIAL m
             WHERE m.nombre = 'Cobre')
 )
--- WHERE TO_CHAR(d.FECHA,'mm') = '6' AND 
--- TO_CHAR(FECHA,'yyyy') = '2018'
+
+AND TO_CHAR(d.FECHA,'mm') = 6 AND 
+TO_CHAR(FECHA,'yyyy') = 2018
 ;
 
 
@@ -192,15 +193,24 @@ WHERE mat.codigo IN (
 -- que haya sido depositado entre el 10 y 20 de agosto de 2018.
 
     
-SELECT * --NOMBRE, MAX(TIEMPO) 
+SELECT r.NOMBRE, pr.DESCRIPCION, r.TIEMPO 
 FROM RECICLAJE r
 INNER JOIN PROCESO pr
 ON r.codigo = pr.codigo
+INNER JOIN ARTICULO ar
+ON ar.nombre = r.nombre
+INNER JOIN DEPOSITO d
+ON d.nombre = ar.nombre
 WHERE r.tiempo IN
                 -- los tiempos maximos
                 (SELECT MAX(rPaso.Tiempo) tiempo
                     FROM RECICLAJE rPaso
-                    GROUP BY rPaso.Nombre);
+                    GROUP BY rPaso.Nombre)
+AND TO_CHAR(d.FECHA,'mm') = 8 
+AND TO_CHAR(d.FECHA,'yyyy') = 2018
+AND (TO_CHAR(d.FECHA,'dd') >= 10 AND TO_CHAR(d.FECHA,'dd') <=20)
+AND ar.tipoarticulo = 'Laptops'
+;
                     
                     
 -- 8. Obtener los datos de los materiales que estén presenten en más de 45 artículos en una proporción de más del 5% por artículo. 
@@ -410,10 +420,6 @@ FROM
         
         on t1.nombrepunto = t2.nombrepunto
         AND t1.maxcant = t2.cant) MASDEPO
-
-
-
-    
    
 WHERE ESTACIONES.ESTACION = DEPOSITOS.ESTACION
 AND TOTALDEPOSITOS.nombre = Hora.NombreArticulo
@@ -423,68 +429,4 @@ AND TOTALDEPOSITOS.NOMBRE = HORA.NOMBREARTICULO
 AND depositoestacion.estacion = ESTACIONES.ESTACION
 AND masdepo.nombrepunto = HORA.NOMBREPUNTO
 ;
-
-
-
---SELECT d7.nombrepunto, m7.nombre, COUNT(m7.nombre) cant
---FROM MATERIAL m7
---INNER JOIN COMPUESTOPOR cp7
---ON m7.codigo = cp7.codigo
---INNER JOIN ARTICULO ar7
---ON ar7.nombre = cp7.nombre
---INNER JOIN DEPOSITO d7
---ON d7.NOMBRE = ar7.NOMBRE
---INNER JOIN PUNTOLIMPIO pl7
---ON pl7.nombrepunto = d7.nombrepunto
---GROUP BY d7.nombrepunto, m7.nombre
---;
-
-
-
---    
---SELECT t2.nombrepunto, t2.nombre as Materialmasdepositado FROM 
---(SELECT nombrepunto, MAX(cant) maxcant from (
---    SELECT d7.nombrepunto, m7.nombre, COUNT(m7.nombre) cant
---    FROM MATERIAL m7
---    INNER JOIN COMPUESTOPOR cp7
---    ON m7.codigo = cp7.codigo
---    INNER JOIN ARTICULO ar7
---    ON ar7.nombre = cp7.nombre
---    INNER JOIN DEPOSITO d7
---    ON d7.NOMBRE = ar7.NOMBRE
---    INNER JOIN PUNTOLIMPIO pl7
---    ON pl7.nombrepunto = d7.nombrepunto
---    GROUP BY d7.nombrepunto, m7.nombre
---)
---group by nombrepunto
---)t1 
---INNER JOIN
---(
---    SELECT d7.nombrepunto, m7.nombre, COUNT(m7.nombre) cant
---    FROM MATERIAL m7
---    INNER JOIN COMPUESTOPOR cp7
---    ON m7.codigo = cp7.codigo
---    INNER JOIN ARTICULO ar7
---    ON ar7.nombre = cp7.nombre
---    INNER JOIN DEPOSITO d7
---    ON d7.NOMBRE = ar7.NOMBRE
---    INNER JOIN PUNTOLIMPIO pl7
---    ON pl7.nombrepunto = d7.nombrepunto
---    GROUP BY d7.nombrepunto, m7.nombre
---)t2
---
---on t1.nombrepunto = t2.nombrepunto
---AND t1.maxcant = t2.cant
---;
-
-
-
-
-
-
-
-
-
-            
-
 
