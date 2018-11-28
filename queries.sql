@@ -62,57 +62,86 @@ INNER JOIN RECICLAJE r ON r.CODIGO = p.CODIGO
 WHERE R.TIEMPO>60 AND R.ORDEN BETWEEN 1 AND 5 AND p.CODIGO IN(
   SELECT p1.CODIGO AS CODIGO FROM PROCESO p1
   INNER JOIN PROCESO p2 ON p1.codprocparalelo = p2.CODIGO
-  WHERE p2.CODPROCPARALELO <> P1.CODIGO AND P2.CODIGO IN
-    (SELECT r1.codigo FROM RECICLAJE r1
-    WHERE r1.NOMBRE = r.nombre AND r1.TIEMPO >60)
+  WHERE p2.CODPROCPARALELO <> P1.CODIGO
+--   AND P2.CODIGO IN
+--     (SELECT r1.codigo FROM RECICLAJE r1
+--     WHERE r1.NOMBRE = r.nombre AND r1.TIEMPO >60)
   UNION
   SELECT p1.CODPROCPARALELO AS CODIGO FROM PROCESO p1
   INNER JOIN PROCESO p2 ON p1.codprocparalelo = p2.CODIGO
-  WHERE p2.CODPROCPARALELO <> P1.CODIGO AND P2.CODIGO IN
-    (SELECT r1.codigo FROM RECICLAJE r1
-    WHERE r1.NOMBRE = r.nombre AND r1.TIEMPO >60)
+  WHERE p2.CODPROCPARALELO <> P1.CODIGO
+--   AND P2.CODIGO IN
+--     (SELECT r1.codigo FROM RECICLAJE r1
+--     WHERE r1.NOMBRE = r.nombre AND r1.TIEMPO >60)
   UNION
   SELECT p2.CODIGO AS CODIGO FROM PROCESO p1
   INNER JOIN PROCESO p2 ON p1.codprocparalelo = p2.CODIGO
-  WHERE p2.CODPROCPARALELO <> P1.CODIGO AND P2.CODIGO IN
-    (SELECT r1.codigo FROM RECICLAJE r1
-    WHERE r1.NOMBRE = r.nombre AND r1.TIEMPO >60)
+  WHERE p2.CODPROCPARALELO <> P1.CODIGO
+--   AND P2.CODIGO IN
+--     (SELECT r1.codigo FROM RECICLAJE r1
+--     WHERE r1.NOMBRE = r.nombre AND r1.TIEMPO >60)
   UNION
   SELECT p2.CODPROCPARALELO AS CODIGO FROM PROCESO p1
   INNER JOIN PROCESO p2 ON p1.codprocparalelo = p2.CODIGO
-  WHERE p2.CODPROCPARALELO <> P1.CODIGO AND P2.CODIGO IN
-    (SELECT r1.codigo FROM RECICLAJE r1
-    WHERE r1.NOMBRE = r.nombre AND r1.TIEMPO >60)
+  WHERE p2.CODPROCPARALELO <> P1.CODIGO
+--   AND P2.CODIGO IN
+--     (SELECT r1.codigo FROM RECICLAJE r1
+--     WHERE r1.NOMBRE = r.nombre AND r1.TIEMPO >60)
   );
 
 --5) Obtener el nombre, superficie e intendencia de los puntos limpios donde se depositaron todos los
---materiales. Considerar aquellos materiales que no est�n presentes en art�culos de tipo laptop.
-SELECT pl.nombrepunto, pl.superficie, pl.Intendencia 
-FROM puntolimpio pl
-INNER JOIN deposito d
-ON pl.nombrepunto = d.nombrepunto
-INNER JOIN articulo art
-ON art.nombre = d.nombre
-INNER JOIN compuestopor cp
-ON cp.nombre = art.nombre
-INNER JOIN MATERIAL mat
-ON mat.codigo = cp.codigo
-where mat.codigo not in (
-                -- Materiales usados para laptops
-                SELECT distinct mat.codigo as materialesLaptop 
-                FROM puntolimpio pl
-                INNER JOIN deposito d
-                ON pl.nombrepunto = d.nombrepunto
-                INNER JOIN articulo art
-                ON art.nombre = d.nombre
-                INNER JOIN compuestopor cp
-                ON cp.nombre = art.nombre
-                INNER JOIN MATERIAL mat
-                ON mat.codigo = cp.codigo
-                WHERE art.tipoarticulo = 'Laptops'
-)
-GROUP BY pl.nombrepunto, pl.superficie, pl.Intendencia
-;
+--materiales. Considerar aquellos materiales que no están presentes en artculos de tipo laptop.
+-- SELECT pl.nombrepunto, pl.superficie, pl.Intendencia
+-- FROM puntolimpio pl
+-- INNER JOIN deposito d
+-- ON pl.nombrepunto = d.nombrepunto
+-- INNER JOIN articulo art
+-- ON art.nombre = d.nombre
+-- INNER JOIN compuestopor cp
+-- ON cp.nombre = art.nombre
+-- INNER JOIN MATERIAL mat
+-- ON mat.codigo = cp.codigo
+-- where mat.codigo not in (
+--                 -- Materiales usados para laptops
+--                 SELECT distinct mat.codigo as materialesLaptop
+--                 FROM puntolimpio pl
+--                 INNER JOIN deposito d
+--                 ON pl.nombrepunto = d.nombrepunto
+--                 INNER JOIN articulo art
+--                 ON art.nombre = d.nombre
+--                 INNER JOIN compuestopor cp
+--                 ON cp.nombre = art.nombre
+--                 INNER JOIN MATERIAL mat
+--                 ON mat.codigo = cp.codigo
+--                 WHERE art.tipoarticulo = 'Laptops'
+-- )
+-- GROUP BY pl.nombrepunto, pl.superficie, pl.Intendencia
+-- ;
+
+SELECT * --p.nombrepunto, p.superficie, p.Intendencia
+FROM PUNTOLIMPIO p
+INNER JOIN DEPOSITO d ON d.NOMBREPUNTO = p.NOMBREPUNTO
+INNER JOIN ARTICULO a1 ON a1.NOMBRE = d.NOMBRE
+INNER JOIN COMPUESTOPOR cp1 ON cp1.NOMBRE = a1.NOMBRE
+INNER JOIN MATERIAL m1 ON m1.CODIGO = cp1.CODIGO
+WHERE a1.TIPOARTICULO <> 'Laptops'
+AND COUNT (distinct M1.CODIGO) = (
+  SELECT COUNT(DISTINCT m2.CODIGO) AS cantMatNotInLaptops FROM MATERIAL m2
+  INNER JOIN COMPUESTOPOR cp2 ON m2.CODIGO = cp2.CODIGO
+  INNER JOIN ARTICULO a2 ON cp2.NOMBRE = a2.NOMBRE
+  WHERE a2.TIPOARTICULO <>  'Laptops');
+
+SELECT m1.CODIGO --p.nombrepunto, p.superficie, p.Intendencia
+FROM PUNTOLIMPIO p
+INNER JOIN DEPOSITO d ON d.NOMBREPUNTO = p.NOMBREPUNTO
+INNER JOIN ARTICULO a1 ON a1.NOMBRE = d.NOMBRE
+INNER JOIN COMPUESTOPOR cp1 ON cp1.NOMBRE = a1.NOMBRE
+INNER JOIN MATERIAL m1 ON m1.CODIGO = cp1.CODIGO
+WHERE a1.TIPOARTICULO <> 'Laptops'
+GROUP BY m1.CODIGO;
+
+
+
 
 --6) Obtener el nombre y la descripci�n de los art�culos que tuvieron dep�sitos en junio de 2018. De estos
 --art�culos, mostrar para los que tengan cobre, el c�digo de dicho material y para los que no contengan
