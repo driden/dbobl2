@@ -274,7 +274,9 @@ WHERE codigo in (
 --Cantidad Depósitos x Artículo – Total Depósitos x Estación – Porcentaje – Material más depositado   
 
 SELECT estaciones.estacion, depositos.puntolimpio, depositos.cantdepositos,
-        cant.cantidadtoneladas,Hora.PromediodeDepositosxHora, Hora.NOMBREARTICULO
+        cant.cantidadtoneladas,Hora.PromediodeDepositosxHora, Hora.NOMBREARTICULO,
+        Totaldepositos.CantidadDepositosxArticulo, depositoestacion.totaldepositosxestacion,depositoestacion.porcentaje,
+        masdepo.Materialmásdepositado
 FROM 
     (SELECT 'INVIERNO' AS ESTACION FROM DUAL
         UNION
@@ -301,30 +303,159 @@ FROM
     ) DEPOSITOS,
     
     --la cantidad depositada en toneladas en cada punto limpio de artículos que contengan al menos un 50% de plástico
-    (SELECT SUM(d3.PESOKG)/1000 AS CANTIDADTONELADAS
+    (SELECT SUM(d3.PESOKG)/1000 AS CANTIDADTONELADAS, d3.NOMBREPUNTO
     FROM ARTICULO ar3
     INNER JOIN DEPOSITO d3
     ON ar3.nombre = d3.nombre
     INNER JOIN COMPUESTOPOR cp3
     ON cp3.nombre = ar3.nombre
-    WHERE cp3.PORCENTAJE > 50) CANT,
+    INNER JOIN PUNTOLIMPIO pl3
+    ON pl3.NOMBREPUNTO = d3.NOMBREPUNTO
+    WHERE cp3.PORCENTAJE > 50
+    GROUP BY d3.NOMBREPUNTO ) CANT,
 
-    
     --promedio de depósitos por hora de cada punto limpio, considerando las 24 horas del día y la cantidad de depósitos por artículo en cada punto limpio.
-    (SELECT d4.fecha, COUNT(1)/24 AS PromediodeDepositosxHora, d4.nombre AS NOMBREARTICULO
+    (SELECT d4.fecha, COUNT(1)/24 AS PromediodeDepositosxHora, d4.nombre AS NOMBREARTICULO, d4.nombrepunto NOMBREPUNTO
     FROM DEPOSITO d4
     WHERE d4.nombrepunto IN (SELECT  NOMBREPUNTO FROM PUNTOLIMPIO)
-    GROUP BY d4.fecha, d4.nombre) Hora,
+    GROUP BY d4.fecha, d4.nombre, d4.nombrepunto) HORA,
+    
+    (SELECT COUNT(1) as CantidadDepositosxArticulo, d6.Nombre nombre
+    FROM DEPOSITO d6
+    GROUP BY d6.NOMBRE) TOTALDEPOSITOS,
     
     --Mostrar además qué porcentaje representa la cantidad de depósitos totales de cada punto limpio sobre el total de depósitos de cada estación.
-    SELECT COUNT(d5.nombrepunto), d5.nombrepunto
-    FROM DEPOSITO d5
-    GROUP BY d5.nombrepunto
+(
+     SELECT COUNT(1) AS TotalDepositosxEstacion, 'INVIERNO' ESTACION, (100*COUNT(1)/(SELECT COUNT(1) FROM DEPOSITO)) Porcentaje
+     FROM DEPOSITO d
+     INNER JOIN ARTICULO ar
+     ON d.NOMBRE = ar.NOMBRE
+     WHERE  ((TO_CHAR(d.FECHA,'mm') = 7 AND TO_CHAR(d.FECHA,'mm') >= 21) OR (TO_CHAR(d.FECHA,'mm') = 8)
+            OR (TO_CHAR(d.FECHA,'mm') = 9 AND TO_CHAR(d.FECHA,'mm') <= 21))
+     GROUP BY 'INVIERNO'
+     
+     UNION 
+     
+     SELECT COUNT(1) AS TotalDepositosxEstacion, 'PRIMAVERA' ESTACION, 100*COUNT(1)/(SELECT COUNT(1) FROM DEPOSITO) Porcentaje
+     FROM DEPOSITO d2
+     INNER JOIN ARTICULO ar2
+     ON d2.NOMBRE = ar2.NOMBRE
+     WHERE  (TO_CHAR(d2.FECHA,'mm') = 12 AND TO_CHAR(d2.FECHA,'mm') <= 21) OR
+            ( TO_CHAR(d2.FECHA,'mm') = 9 AND TO_CHAR(d2.FECHA,'mm') >= 22 ) 
+            OR (TO_CHAR(d2.FECHA,'mm') = 10 OR TO_CHAR(d2.FECHA,'mm') = 11)
+            
+                
+     GROUP BY 'PRIMAVERA'
+     ) DEPOSITOESTACION,
+     
+    (SELECT t2.nombrepunto, t2.nombre AS Materialmásdepositado FROM 
+        (SELECT nombrepunto, MAX(cant) maxcant from (
+            SELECT d7.nombrepunto, m7.nombre, COUNT(m7.nombre) cant
+            FROM MATERIAL m7
+            INNER JOIN COMPUESTOPOR cp7
+            ON m7.codigo = cp7.codigo
+            INNER JOIN ARTICULO ar7
+            ON ar7.nombre = cp7.nombre
+            INNER JOIN DEPOSITO d7
+            ON d7.NOMBRE = ar7.NOMBRE
+            INNER JOIN PUNTOLIMPIO pl7
+            ON pl7.nombrepunto = d7.nombrepunto
+            GROUP BY d7.nombrepunto, m7.nombre
+        )
+        group by nombrepunto
+        )t1 
+        INNER JOIN
+        (
+            SELECT d7.nombrepunto, m7.nombre, COUNT(m7.nombre) cant
+            FROM MATERIAL m7
+            INNER JOIN COMPUESTOPOR cp7
+            ON m7.codigo = cp7.codigo
+            INNER JOIN ARTICULO ar7
+            ON ar7.nombre = cp7.nombre
+            INNER JOIN DEPOSITO d7
+            ON d7.NOMBRE = ar7.NOMBRE
+            INNER JOIN PUNTOLIMPIO pl7
+            ON pl7.nombrepunto = d7.nombrepunto
+            GROUP BY d7.nombrepunto, m7.nombre
+        )t2
+        
+        on t1.nombrepunto = t2.nombrepunto
+        AND t1.maxcant = t2.cant) MASDEPO
+
+
+
     
    
 WHERE ESTACIONES.ESTACION = DEPOSITOS.ESTACION
-
-
+AND TOTALDEPOSITOS.nombre = Hora.NombreArticulo
+AND cant.nombrepunto = DEPOSITOS.puntolimpio
+AND CANT.NOMBREPUNTO = HORA.NOMBREPUNTO
+AND TOTALDEPOSITOS.NOMBRE = HORA.NOMBREARTICULO
+AND depositoestacion.estacion = ESTACIONES.ESTACION
+AND masdepo.nombrepunto = HORA.NOMBREPUNTO
 ;
+
+
+
+--SELECT d7.nombrepunto, m7.nombre, COUNT(m7.nombre) cant
+--FROM MATERIAL m7
+--INNER JOIN COMPUESTOPOR cp7
+--ON m7.codigo = cp7.codigo
+--INNER JOIN ARTICULO ar7
+--ON ar7.nombre = cp7.nombre
+--INNER JOIN DEPOSITO d7
+--ON d7.NOMBRE = ar7.NOMBRE
+--INNER JOIN PUNTOLIMPIO pl7
+--ON pl7.nombrepunto = d7.nombrepunto
+--GROUP BY d7.nombrepunto, m7.nombre
+--;
+
+
+
+--    
+--SELECT t2.nombrepunto, t2.nombre as Materialmasdepositado FROM 
+--(SELECT nombrepunto, MAX(cant) maxcant from (
+--    SELECT d7.nombrepunto, m7.nombre, COUNT(m7.nombre) cant
+--    FROM MATERIAL m7
+--    INNER JOIN COMPUESTOPOR cp7
+--    ON m7.codigo = cp7.codigo
+--    INNER JOIN ARTICULO ar7
+--    ON ar7.nombre = cp7.nombre
+--    INNER JOIN DEPOSITO d7
+--    ON d7.NOMBRE = ar7.NOMBRE
+--    INNER JOIN PUNTOLIMPIO pl7
+--    ON pl7.nombrepunto = d7.nombrepunto
+--    GROUP BY d7.nombrepunto, m7.nombre
+--)
+--group by nombrepunto
+--)t1 
+--INNER JOIN
+--(
+--    SELECT d7.nombrepunto, m7.nombre, COUNT(m7.nombre) cant
+--    FROM MATERIAL m7
+--    INNER JOIN COMPUESTOPOR cp7
+--    ON m7.codigo = cp7.codigo
+--    INNER JOIN ARTICULO ar7
+--    ON ar7.nombre = cp7.nombre
+--    INNER JOIN DEPOSITO d7
+--    ON d7.NOMBRE = ar7.NOMBRE
+--    INNER JOIN PUNTOLIMPIO pl7
+--    ON pl7.nombrepunto = d7.nombrepunto
+--    GROUP BY d7.nombrepunto, m7.nombre
+--)t2
+--
+--on t1.nombrepunto = t2.nombrepunto
+--AND t1.maxcant = t2.cant
+--;
+
+
+
+
+
+
+
+
+
+            
 
 
