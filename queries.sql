@@ -263,7 +263,61 @@ WHERE codigo in (
 
 );
 
---10. Obtener para las estaciones de invierno y primavera, la cantidad de depósitos por punto limpio, la cantidad depositada en toneladas en cada punto limpio de artículos que contengan al menos un 50% de plástico, el promedio de depósitos por hora de cada punto limpio, considerando las 24 horas del día y la cantidad de depósitos por artículo en cada punto limpio. Mostrar además qué porcentaje representa la cantidad de depósitos totales de cada punto limpio sobre el total de depósitos de cada estación. Mostrar para cada punto limpio cuál fue el material más depositado. Si hay más de un material más depositado, mostrarlos todos.
+--10. Obtener para las estaciones de invierno y primavera, la cantidad de depósitos por punto limpio, 
+--  la cantidad depositada en toneladas en cada punto limpio de artículos que contengan al menos un 50% de plástico, 
+--  el promedio de depósitos por hora de cada punto limpio, considerando las 24 horas del día y la cantidad de depósitos por artículo en cada punto limpio. 
+--  Mostrar además qué porcentaje representa la cantidad de depósitos totales de cada punto limpio sobre el total de depósitos de cada estación. 
+--  Mostrar para cada punto limpio cuál fue el material más depositado. Si hay más de un material más depositado, mostrarlos todos.
 --El esquema que se espera de esta consulta es el siguiente (respetar los nombres).
---Estación – Punto Limpio – Cantidad Depósitos – Cantidad Toneladas – Promedio de Depósitos x Hora – Nombre Artículo – Cantidad Depósitos x Artículo – Total Depósitos x Estación – Porcentaje – Material más depositado                   
+--Estación – Punto Limpio – Cantidad Depósitos – Cantidad Toneladas – Promedio de Depósitos x Hora – Nombre Artículo – 
+--Cantidad Depósitos x Artículo – Total Depósitos x Estación – Porcentaje – Material más depositado   
+
+SELECT estaciones.estacion, depositos.puntolimpio, depositos.cantdepositos,
+        cant.cantidadtoneladas,Hora.PromediodeDepositosxHora, Hora.NOMBREARTICULO
+FROM 
+    (SELECT 'INVIERNO' AS ESTACION FROM DUAL
+        UNION
+    SELECT 'PRIMAVERA' AS ESTACION FROM DUAL) ESTACIONES,
+    
+    (
+     SELECT d.NOMBREPUNTO AS PUNTOLIMPIO, COUNT(1) AS CANTDEPOSITOS, 'INVIERNO' ESTACION 
+     FROM DEPOSITO d
+     WHERE  ((TO_CHAR(d.FECHA,'mm') = 7 AND TO_CHAR(d.FECHA,'mm') >= 21) OR (TO_CHAR(d.FECHA,'mm') = 8)
+            OR (TO_CHAR(d.FECHA,'mm') = 9 AND TO_CHAR(d.FECHA,'mm') <= 21))
+     GROUP BY  d.NOMBREPUNTO,'INVIERNO'
+     
+     UNION 
+     
+     SELECT d2.NOMBREPUNTO AS PUNTOLIMPIO, COUNT(1) AS CANTDEPOSITOS, 'PRIMAVERA' ESTACION 
+     FROM DEPOSITO d2
+     WHERE  (TO_CHAR(d2.FECHA,'mm') = 12 AND TO_CHAR(d2.FECHA,'mm') <= 21) OR
+            ( TO_CHAR(d2.FECHA,'mm') = 9 AND TO_CHAR(d2.FECHA,'mm') >= 22 ) 
+            OR (TO_CHAR(d2.FECHA,'mm') = 10 OR TO_CHAR(d2.FECHA,'mm') = 11)
+            
+                
+     GROUP BY  d2.NOMBREPUNTO,'PRIMAVERA'
+     
+    ) DEPOSITOS,
+    
+    --la cantidad depositada en toneladas en cada punto limpio de artículos que contengan al menos un 50% de plástico
+    (SELECT SUM(d3.PESOKG)/1000 AS CANTIDADTONELADAS
+    FROM ARTICULO ar3
+    INNER JOIN DEPOSITO d3
+    ON ar3.nombre = d3.nombre
+    INNER JOIN COMPUESTOPOR cp3
+    ON cp3.nombre = ar3.nombre
+    WHERE cp3.PORCENTAJE > 50) CANT,
+
+    
+    --promedio de depósitos por hora de cada punto limpio, considerando las 24 horas del día y la cantidad de depósitos por artículo en cada punto limpio.
+    (SELECT d4.fecha, COUNT(1)/24 AS PromediodeDepositosxHora, d4.nombre AS NOMBREARTICULO
+    FROM DEPOSITO d4
+    WHERE d4.nombrepunto IN (SELECT  NOMBREPUNTO FROM PUNTOLIMPIO)
+    GROUP BY d4.fecha, d4.nombre) Hora
+   
+WHERE ESTACIONES.ESTACION = DEPOSITOS.ESTACION
+
+
+;
+
 
