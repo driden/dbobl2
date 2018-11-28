@@ -93,33 +93,45 @@ WHERE r.tiempo > 60
                  );
 
 --5) Obtener el nombre, superficie e intendencia de los puntos limpios donde se depositaron todos los
---materiales. Considerar aquellos materiales que no están presentes en artculos de tipo laptop.
--- SELECT pl.nombrepunto, pl.superficie, pl.Intendencia
--- FROM puntolimpio pl
--- INNER JOIN deposito d
--- ON pl.nombrepunto = d.nombrepunto
--- INNER JOIN articulo art
--- ON art.nombre = d.nombre
--- INNER JOIN compuestopor cp
--- ON cp.nombre = art.nombre
--- INNER JOIN MATERIAL mat
--- ON mat.codigo = cp.codigo
--- where mat.codigo not in (
---                 -- Materiales usados para laptops
---                 SELECT distinct mat.codigo as materialesLaptop
---                 FROM puntolimpio pl
---                 INNER JOIN deposito d
---                 ON pl.nombrepunto = d.nombrepunto
---                 INNER JOIN articulo art
---                 ON art.nombre = d.nombre
---                 INNER JOIN compuestopor cp
---                 ON cp.nombre = art.nombre
---                 INNER JOIN MATERIAL mat
---                 ON mat.codigo = cp.codigo
---                 WHERE art.tipoarticulo = 'Laptops'
--- )
--- GROUP BY pl.nombrepunto, pl.superficie, pl.Intendencia
--- ;
+--materiales. Considerar aquellos materiales que no están presentes en articulos de tipo laptop.
+
+SELECT NOMBREPUNTO, SUPERFICIE, INTENDENCIA 
+FROM PUNTOLIMPIO
+WHERE NOMBREPUNTO = (
+
+ SELECT pl.nombrepunto
+ FROM puntolimpio pl
+ INNER JOIN deposito d
+ ON pl.nombrepunto = d.nombrepunto
+ INNER JOIN articulo art
+ ON art.nombre = d.nombre
+ INNER JOIN compuestopor cp
+ ON cp.nombre = art.nombre
+ INNER JOIN MATERIAL mat
+ ON mat.codigo = cp.codigo
+ where mat.codigo not in (
+                 -- Materiales usados para laptops
+                 SELECT distinct mat.codigo as materialesLaptop
+                 FROM articulo art
+                 INNER JOIN compuestopor cp
+                 ON cp.nombre = art.nombre
+                 INNER JOIN MATERIAL mat
+                 ON mat.codigo = cp.codigo
+                 WHERE art.tipoarticulo = 'Laptops'
+            )
+GROUP BY pl.nombrepunto, mat.codigo
+HAVING count(mat.codigo) = (SELECT COUNT(CODIGO)
+                            FROM MATERIAL 
+                            where codigo not in (
+                             -- Materiales usados para laptops
+                             SELECT distinct mat.codigo as materialesLaptop
+                             FROM articulo art
+                             INNER JOIN compuestopor cp
+                             ON cp.nombre = art.nombre
+                             INNER JOIN MATERIAL mat
+                             ON mat.codigo = cp.codigo
+                             WHERE art.tipoarticulo = 'Laptops'))
+                             );
 
 SELECT * --p.nombrepunto, p.superficie, p.Intendencia
 FROM PUNTOLIMPIO p
@@ -144,7 +156,7 @@ WHERE a1.TIPOARTICULO <> 'Laptops'
 GROUP BY m1.CODIGO;
 
 --6) Obtener el nombre y la descripción de los artculos que tuvieron depósitos en junio de 2018. De estos
---art�culos, mostrar para los que tengan cobre, el código de dicho material y para los que no contengan
+--articulos, mostrar para los que tengan cobre, el código de dicho material y para los que no contengan
 --cobre mostrar el texto No contiene cobre.
 
 SELECT a2.nombre, (SELECT 'No contiene cobre' FROM dual) AS cobre
