@@ -171,11 +171,6 @@ WHERE mat.codigo IN (
 AND TO_CHAR(d.FECHA,'mm') = 6
 AND TO_CHAR(FECHA,'yyyy') = 2018;
 
-AND TO_CHAR(d.FECHA,'mm') = 6 AND 
-TO_CHAR(FECHA,'yyyy') = 2018
-;
-
-
 -- 7. Obtener el nombre y la descripción de los procesos de reciclaje que representaron
 -- la mayor cantidad de tiempo en total
 -- considerando procesos donde se haya reciclado algún artículo de tipo laptop y
@@ -191,8 +186,8 @@ INNER JOIN DEPOSITO d
 ON d.nombre = ar.nombre
 WHERE r.tiempo IN
 -- los tiempos maximos
-      (SELECT MAX(rpaso.tiempo) tiempo FROM reciclaje rpaso GROUP BY rpaso.nombre);
-                    GROUP BY rPaso.Nombre)
+      (SELECT MAX(rpaso.tiempo) tiempo FROM reciclaje rpaso GROUP BY rpaso.nombre)
+                  
 AND TO_CHAR(d.FECHA,'mm') = 8 
 AND TO_CHAR(d.FECHA,'yyyy') = 2018
 AND (TO_CHAR(d.FECHA,'dd') >= 10 AND TO_CHAR(d.FECHA,'dd') <=20)
