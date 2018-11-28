@@ -154,9 +154,7 @@ WHERE a2.nombre NOT IN (SELECT art.nombre
                                INNER JOIN compuestopor cp ON cp.nombre = art.nombre
                                INNER JOIN material mat ON mat.codigo = cp.codigo
                                INNER JOIN deposito d ON art.nombre = d.nombre
-                        WHERE mat.codigo = (
--- Codigos que de Cobre
-                                           SELECT m.codigo FROM material m WHERE m.nombre = 'Cobre'))
+                        WHERE mat.codigo = (SELECT m.codigo FROM material m WHERE m.nombre = 'Cobre')) -- Codigos que de Cobre
 UNION
 SELECT art.nombre, (SELECT to_char(m.codigo) FROM material m WHERE m.nombre = 'Cobre') AS cobre
 FROM articulo art
@@ -217,22 +215,22 @@ AND mat2.codigo IN (-- mas de 45 articulos
             INNER JOIN MATERIAL mat1
             ON mat1.Codigo = cpr1.Codigo
             GROUP BY cpr1.CODIGO
-            HAVING COUNT(1) > 1
+            HAVING COUNT(1) > 45
     )
 AND mat2.codigo NOT IN (
   --maeriales depositados en menos del 40% de los puntos limpios
-SELECT mat.CODIGO
-FROM ARTICULO ar
-INNER JOIN COMPUESTOPOR cpr
-ON ar.Nombre = cpr.Nombre
-INNER JOIN DEPOSITO dep
-ON ar.Nombre = dep.Nombre
-INNER JOIN PUNTOLIMPIO pl
-ON dep.NombrePunto = pl.nombrepunto
-INNER JOIN MATERIAL mat
-ON mat.Codigo = cpr.Codigo
-GROUP BY mat.CODIGO
-HAVING ((COUNT(distinct dep.NombrepUnto)/(SELECT COUNT(1) FROM PUNTOLIMPIO)) * 100) < 40  
+    SELECT mat.CODIGO
+    FROM ARTICULO ar
+    INNER JOIN COMPUESTOPOR cpr
+    ON ar.Nombre = cpr.Nombre
+    INNER JOIN DEPOSITO dep
+    ON ar.Nombre = dep.Nombre
+    INNER JOIN PUNTOLIMPIO pl
+    ON dep.NombrePunto = pl.nombrepunto
+    INNER JOIN MATERIAL mat
+    ON mat.Codigo = cpr.Codigo
+    GROUP BY mat.CODIGO
+    HAVING ((COUNT(distinct dep.NombrepUnto)/(SELECT COUNT(1) FROM PUNTOLIMPIO)) * 100) < 40  
 )
 
 GROUP BY mat2.codigo, mat2.nombre, mat2.tipomaterial
@@ -263,8 +261,8 @@ WHERE codigo in (
                                             FROM ARTICULO ar2
                                             INNER JOIN DEPOSITO d2
                                             on ar2.nombre = d2.nombre
-                                            WHERE TO_CHAR(d2.FECHA,'mm') >= 1 
-                                            AND TO_CHAR(d2.FECHA,'mm') <= 12
+                                            WHERE TO_CHAR(d2.FECHA,'mm') >= 5 
+                                            AND TO_CHAR(d2.FECHA,'mm') <= 8
                                             AND TO_CHAR(d2.FECHA,'yyyy') = 2018
                                             GROUP BY d2.nombre
                                             HAVING COUNT(d2.nombre) = (
@@ -273,8 +271,8 @@ WHERE codigo in (
                                                     FROM ARTICULO ar1
                                                     INNER JOIN DEPOSITO d1
                                                     ON ar1.nombre = d1.nombre
-                                                    WHERE TO_CHAR(d1.FECHA,'mm') >= 1 
-                                                    AND TO_CHAR(d1.FECHA,'mm') <= 12
+                                                    WHERE TO_CHAR(d1.FECHA,'mm') >= 5 
+                                                    AND TO_CHAR(d1.FECHA,'mm') <= 8
                                                     AND TO_CHAR(d1.FECHA,'yyyy') = 2018
                                                     GROUP BY ar1.nombre 
                                             ))
